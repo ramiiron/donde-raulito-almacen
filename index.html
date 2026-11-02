@@ -476,6 +476,7 @@ function generarAvisos(hoy){
 var _avisosMapa = {};
 function pintarAvisos(hoy){
   var lista = document.getElementById("avisos-lista"); if(!lista) return;
+  var avd = document.getElementById("av-dias"); if(avd && document.activeElement!==avd) avd.value = st.cfg.diasInactivo;
   var avisos = generarAvisos(hoy);
   _avisosMapa = {};
   avisos.forEach(function(a){ _avisosMapa[a.clave] = a; });
