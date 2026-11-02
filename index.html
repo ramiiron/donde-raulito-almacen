@@ -4,109 +4,162 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Donde Raulito — Club de Clientes</title>
-<meta name="theme-color" content="#2e7d32">
+<meta name="theme-color" content="#1f6f43">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <style>
-:root{--p:#2e7d32;--p-osc:#1b5e20;--fondo:#f6f4ef;--card:#ffffff;--txt:#26221c;--mut:#7a7263;--borde:#e5dfd2;--ok:#2e7d32;--rojo:#c62828}
+:root{
+  --p:#1f6f43; --p-osc:#175735; --p-suave:#e9f2ec;
+  --fondo:#f5f4f1; --card:#ffffff; --txt:#1c1a17; --mut:#857e6f; --borde:#e7e2d8;
+  --rojo:#b3261e; --wa:#1fa855;
+  --sombra:0 1px 2px rgba(28,26,23,.04),0 8px 24px -12px rgba(28,26,23,.12);
+  --radio:16px;
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--fondo);color:var(--txt);padding-bottom:86px}
-header{background:var(--p);color:#fff;padding:16px 16px 12px;position:sticky;top:0;z-index:5}
-header h1{font-size:20px;line-height:1.2}
-header p{font-size:12.5px;opacity:.9;margin-top:2px}
-main{max-width:560px;margin:0 auto;padding:14px}
-.vista{display:none}.vista.activa{display:block}
-.card{background:var(--card);border:1px solid var(--borde);border-radius:14px;padding:14px;margin-bottom:12px}
-.card h2{font-size:16px;margin-bottom:8px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.stat{background:var(--card);border:1px solid var(--borde);border-radius:14px;padding:12px;text-align:center}
-.stat b{display:block;font-size:24px;color:var(--p)}
+html{-webkit-text-size-adjust:100%}
+body{font-family:"Avenir Next","Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",sans-serif;background:var(--fondo);color:var(--txt);padding-bottom:92px;line-height:1.45}
+::selection{background:var(--p-suave)}
+
+/* ---------- encabezado ---------- */
+header{background:var(--card);border-bottom:1px solid var(--borde);position:sticky;top:0;z-index:5}
+.cab{max-width:580px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:13px}
+.marca{width:44px;height:44px;border-radius:13px;background:var(--p);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;letter-spacing:.4px;flex:none}
+.cab h1{font-size:17.5px;font-weight:650;letter-spacing:-.2px;line-height:1.2}
+.cab p{font-size:12.5px;color:var(--mut);margin-top:1px}
+.cab .club{margin-left:auto;flex:none;font-size:10.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--p);background:var(--p-suave);padding:5px 10px;border-radius:99px}
+
+main{max-width:580px;margin:0 auto;padding:20px 16px 8px}
+.vista{display:none}.vista.activa{display:block;animation:entra .22s ease}
+@keyframes entra{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.tit-sec{font-size:12px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:var(--mut);margin:22px 2px 10px;display:flex;align-items:center;gap:8px}
+.tit-sec:first-child{margin-top:0}
+.tit-sec svg{width:15px;height:15px;stroke:var(--p)}
+
+/* ---------- tarjetas y stats ---------- */
+.card{background:var(--card);border:1px solid var(--borde);border-radius:var(--radio);padding:18px;margin-bottom:14px;box-shadow:var(--sombra)}
+.card h2{font-size:15.5px;font-weight:650;letter-spacing:-.1px;margin-bottom:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.stat{background:var(--card);border:1px solid var(--borde);border-radius:var(--radio);padding:15px 16px;box-shadow:var(--sombra)}
+.stat .lb{font-size:11px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:var(--mut);display:flex;align-items:center;gap:6px}
+.stat .lb svg{width:14px;height:14px;stroke:var(--p)}
+.stat b{display:block;font-size:27px;font-weight:700;letter-spacing:-.5px;margin-top:5px}
 .stat span{font-size:12px;color:var(--mut)}
-label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
-input,select,textarea{width:100%;padding:11px;border:1px solid var(--borde);border-radius:10px;font-size:16px;background:#fff;color:var(--txt)}
-button{font-family:inherit;cursor:pointer}
-.btn{display:block;width:100%;padding:13px;border:none;border-radius:11px;background:var(--p);color:#fff;font-size:16px;font-weight:600;margin-top:12px}
-.btn:active{background:var(--p-osc)}
+
+/* ---------- formularios ---------- */
+label{display:block;font-size:12px;font-weight:600;letter-spacing:.4px;color:var(--mut);text-transform:uppercase;margin:14px 0 6px}
+label:first-of-type{margin-top:4px}
+input,select,textarea{width:100%;padding:12px 13px;border:1px solid var(--borde);border-radius:11px;font-size:16px;background:#fff;color:var(--txt);outline:none;transition:border-color .15s,box-shadow .15s;font-family:inherit}
+input:focus,select:focus,textarea:focus{border-color:var(--p);box-shadow:0 0 0 3px var(--p-suave)}
+input[type="color"]{height:50px;padding:5px;cursor:pointer}
+::placeholder{color:#b6ae9d}
+
+/* ---------- botones ---------- */
+button{font-family:inherit}
+.btn{display:block;width:100%;padding:13.5px;border:none;border-radius:12px;background:var(--p);color:#fff;font-size:15.5px;font-weight:600;letter-spacing:.1px;margin-top:16px;transition:background .15s,transform .05s}
+.btn:active{background:var(--p-osc);transform:scale(.99)}
 .btn.sec{background:#fff;color:var(--p);border:1.5px solid var(--p)}
-.btn.chico{width:auto;display:inline-block;padding:8px 13px;font-size:14px;margin-top:0;border-radius:9px}
-.btn.wa{background:#25d366;color:#123b22}
-.btn.rojo{background:#fff;color:var(--rojo);border:1.5px solid var(--rojo)}
-.cliente{border:1px solid var(--borde);border-radius:12px;padding:11px;margin-bottom:9px;background:#fff}
-.cliente .nom{font-weight:700;font-size:15.5px}
-.cliente .det{font-size:12.5px;color:var(--mut);margin-top:1px}
-.barra{height:9px;background:#eee7d8;border-radius:99px;overflow:hidden;margin:8px 0 4px}
-.barra i{display:block;height:100%;background:var(--p);border-radius:99px}
-.fila{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
-.chip{display:inline-block;background:#eef4ee;color:var(--p-osc);border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600}
-.chip.cumple{background:#fff3e0;color:#a35b00}
-.chip.lista{background:#e8f5e9;color:var(--ok);border:1px solid var(--ok)}
-.vacio{color:var(--mut);font-size:14px;text-align:center;padding:16px 6px}
-nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--borde);display:flex;z-index:6}
-nav button{flex:1;background:none;border:none;padding:9px 2px 11px;font-size:11px;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:2px}
-nav button .ic{font-size:20px}
-nav button.on{color:var(--p);font-weight:700}
-#toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:#26221c;color:#fff;padding:11px 18px;border-radius:99px;font-size:14.5px;opacity:0;pointer-events:none;transition:.25s;z-index:9;max-width:92vw;text-align:center}
+.btn.sec:active{background:var(--p-suave)}
+.btn.rojo{background:#fff;color:var(--rojo);border:1.5px solid #eec9c6}
+.btn.chico{width:auto;display:inline-flex;align-items:center;gap:6px;padding:8.5px 14px;font-size:13.5px;margin-top:0;border-radius:99px}
+.btn.chico svg{width:14px;height:14px}
+.btn.wa{background:var(--wa)}
+.btn.wa:active{background:#178544}
+.btn.gris{background:#fff;color:var(--txt);border:1.5px solid var(--borde)}
+.btn.gris:active{background:var(--fondo)}
+
+/* ---------- clientes ---------- */
+.cliente{background:var(--card);border:1px solid var(--borde);border-radius:var(--radio);padding:15px 16px;margin-bottom:11px;box-shadow:var(--sombra)}
+.cli-top{display:flex;align-items:center;gap:12px}
+.avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14.5px;color:#fff;flex:none;letter-spacing:.3px}
+.cli-top .nom{font-weight:650;font-size:15.5px;letter-spacing:-.1px}
+.cli-top .det{font-size:12.5px;color:var(--mut)}
+.mini{font-size:12.5px;color:var(--mut);margin-top:9px}
+.mini b{color:var(--txt);font-weight:650}
+.puntos{display:flex;gap:5px;flex-wrap:wrap;margin-top:11px}
+.puntos i{width:11px;height:11px;border-radius:50%;background:#eee9dc;border:1px solid var(--borde)}
+.puntos i.lleno{background:var(--p);border-color:var(--p)}
+.barra{height:6px;background:#eee9dc;border-radius:99px;overflow:hidden;margin-top:11px}
+.barra i{display:block;height:100%;background:var(--p);border-radius:99px;transition:width .3s}
+.fila{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
+.chip{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:3.5px 10px;font-size:11.5px;font-weight:650;letter-spacing:.2px}
+.chip.cumple{background:#fdf3e3;color:#96660f}
+.chip.lista{background:var(--p-suave);color:var(--p-osc)}
+.chip svg{width:12px;height:12px}
+.vacio{color:var(--mut);font-size:14px;text-align:center;padding:20px 10px;border:1.5px dashed var(--borde);border-radius:var(--radio);background:transparent}
+.ayuda{font-size:13px;color:var(--mut);line-height:1.55}
+.ayuda b{color:var(--txt)}
+
+/* ---------- navegación ---------- */
+nav{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--borde);display:flex;z-index:6;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:none;border:none;padding:9px 2px 10px;font-size:10.5px;font-weight:600;letter-spacing:.3px;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:3px}
+nav button svg{width:21px;height:21px;stroke:currentColor}
+nav button.on{color:var(--p)}
+
+#toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%) translateY(16px);background:#201d19;color:#fff;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:550;opacity:0;pointer-events:none;transition:.25s;z-index:9;max-width:92vw;text-align:center;box-shadow:0 12px 32px -8px rgba(0,0,0,.35)}
 #toast.ver{opacity:1;transform:translateX(-50%) translateY(0)}
-.colores{display:flex;gap:9px;flex-wrap:wrap;margin-top:6px}
-.colores button{width:40px;height:40px;border-radius:50%;border:3px solid transparent;padding:0}
-.colores button.sel{border-color:#26221c}
-.ayuda{font-size:12.5px;color:var(--mut);margin-top:6px;line-height:1.45}
-a{color:var(--p)}
+.colores{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.colores button{width:38px;height:38px;border-radius:50%;border:2px solid rgba(255,255,255,.9);box-shadow:0 0 0 1px var(--borde);padding:0;transition:transform .1s}
+.colores button:active{transform:scale(.92)}
+.colores button.sel{box-shadow:0 0 0 2px var(--txt)}
+hr.sep{border:none;border-top:1px solid var(--borde);margin:16px 0 4px}
 </style>
 </head>
 <body>
 <header>
-  <h1 id="h-nombre">Almacén Donde Raulito</h1>
-  <p>Club de Clientes · Av. El Descanso, Maipú</p>
+  <div class="cab">
+    <div class="marca">DR</div>
+    <div>
+      <h1 id="h-nombre">Almacén Donde Raulito</h1>
+      <p>Av. El Descanso · Maipú</p>
+    </div>
+    <span class="club">Club</span>
+  </div>
 </header>
 
 <main>
 <!-- INICIO -->
 <section id="v-inicio" class="vista activa">
   <div class="grid2">
-    <div class="stat"><b id="s-clientes">0</b><span>Clientes registrados</span></div>
-    <div class="stat"><b id="s-visitas-hoy">0</b><span>Visitas hoy</span></div>
-    <div class="stat"><b id="s-listas">0</b><span>Recompensas listas 🎁</span></div>
-    <div class="stat"><b id="s-cumples">0</b><span>Cumpleaños en 7 días 🎂</span></div>
+    <div class="stat"><span class="lb"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Clientes</span><b id="s-clientes">0</b><span>registrados en el club</span></div>
+    <div class="stat"><span class="lb"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Visitas hoy</span><b id="s-visitas-hoy">0</b><span>clientes que vinieron</span></div>
+    <div class="stat"><span class="lb"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>Recompensas</span><b id="s-listas">0</b><span>listas para canjear</span></div>
+    <div class="stat"><span class="lb"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21h16"/><path d="M5 21v-4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4"/><path d="M12 15V9"/><path d="M12 6.5a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5z"/><path d="M8 15v-1.5"/><path d="M16 15v-1.5"/></svg>Cumpleaños</span><b id="s-cumples">0</b><span>en los próximos 7 días</span></div>
   </div>
-  <div style="height:12px"></div>
-  <div class="card">
-    <h2>⭐ Cerca de su recompensa</h2>
-    <div id="cerca"></div>
-  </div>
-  <div class="card">
-    <h2>🎂 Cumpleaños próximos</h2>
-    <div id="cumples-inicio"></div>
-  </div>
-  <div class="card">
-    <h2>¿Cómo funciona?</h2>
-    <p class="ayuda" id="como-funciona"></p>
-  </div>
+
+  <p class="tit-sec"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Cerca de su recompensa</p>
+  <div id="cerca"></div>
+
+  <p class="tit-sec"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Cumpleaños próximos</p>
+  <div id="cumples-inicio"></div>
+
+  <p class="tit-sec"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Cómo funciona</p>
+  <div class="card"><p class="ayuda" id="como-funciona"></p></div>
 </section>
 
 <!-- CLIENTES -->
 <section id="v-clientes" class="vista">
-  <input id="buscar" type="search" placeholder="🔍 Buscar por nombre o teléfono…">
-  <div style="height:10px"></div>
+  <input id="buscar" type="search" placeholder="Buscar por nombre o teléfono">
+  <div style="height:14px"></div>
   <div id="lista-clientes"></div>
 </section>
 
 <!-- REGISTRAR -->
 <section id="v-registrar" class="vista">
   <div class="card">
-    <h2>➕ Nuevo cliente</h2>
+    <h2>Nuevo cliente</h2>
+    <p class="ayuda">Se registra una sola vez. Desde ahí, cada compra suma una visita.</p>
     <label>Nombre</label>
     <input id="n-nombre" type="text" placeholder="Ej: María González" autocomplete="off">
     <label>Teléfono (WhatsApp)</label>
     <input id="n-fono" type="tel" placeholder="Ej: 9 1234 5678" autocomplete="off">
     <label>Fecha de nacimiento</label>
     <input id="n-cumple" type="date">
-    <p class="ayuda">Con la fecha de nacimiento la app avisa cuándo viene su cumpleaños, para felicitarlo y darle su descuento.</p>
+    <p class="ayuda" style="margin-top:8px">Con su fecha de nacimiento, la app avisa cuándo viene su cumpleaños para felicitarlo y aplicar su descuento.</p>
     <button class="btn" id="btn-nuevo">Registrar cliente</button>
   </div>
   <div class="card">
-    <h2>✏️ Editar cliente</h2>
-    <p class="ayuda">Toca «Editar» en la lista de clientes y sus datos se cargan aquí.</p>
+    <h2>Editar cliente</h2>
+    <p class="ayuda">Toca «Editar» en la tarjeta de un cliente y sus datos se cargan aquí.</p>
     <input id="e-id" type="hidden">
     <label>Nombre</label><input id="e-nombre" type="text">
     <label>Teléfono (WhatsApp)</label><input id="e-fono" type="tel">
@@ -118,24 +171,22 @@ a{color:var(--p)}
 
 <!-- CUMPLEAÑOS -->
 <section id="v-cumples" class="vista">
-  <div class="card">
-    <h2>🎂 Próximos 30 días</h2>
-    <div id="cumples-lista"></div>
-  </div>
+  <p class="tit-sec"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Próximos 30 días</p>
+  <div id="cumples-lista"></div>
 </section>
 
 <!-- AJUSTES -->
 <section id="v-ajustes" class="vista">
   <div class="card">
-    <h2>🎁 Regla de la recompensa</h2>
-    <label>¿Cada cuántas visitas se gana la recompensa?</label>
+    <h2>Regla de la recompensa</h2>
+    <label>Visitas para ganarla</label>
     <input id="a-meta" type="number" min="1" max="50">
     <label>Tipo de recompensa</label>
     <select id="a-tipo">
       <option value="descuento">Descuento en su próxima compra (%)</option>
       <option value="producto">Producto gratis</option>
     </select>
-    <label id="a-pct-label">Descuento de la recompensa (%)</label>
+    <label>Descuento de la recompensa (%)</label>
     <input id="a-pct" type="number" min="1" max="90">
     <label>Producto gratis (si eliges producto)</label>
     <input id="a-prod" type="text" placeholder="Ej: una bebida de 1,5 L">
@@ -144,45 +195,46 @@ a{color:var(--p)}
     <button class="btn" id="btn-reglas">Guardar reglas</button>
   </div>
   <div class="card">
-    <h2>🎨 Color del negocio</h2>
-    <p class="ayuda">Raúl está definiendo los colores: elige uno ahora y cámbialo cuando quiera, la app se tiñe al instante.</p>
+    <h2>Color del negocio</h2>
+    <p class="ayuda">Raúl está definiendo los colores. Elige uno ahora y cámbialo cuando quiera: toda la app se tiñe al instante.</p>
     <div class="colores" id="colores"></div>
     <label>O un color propio</label>
-    <input id="a-color" type="color" style="height:48px;padding:4px">
+    <input id="a-color" type="color">
     <button class="btn sec" id="btn-color">Aplicar color propio</button>
   </div>
   <div class="card">
-    <h2>🏪 Datos del negocio</h2>
+    <h2>Datos del negocio</h2>
     <label>Nombre</label><input id="a-nombre" type="text">
     <button class="btn" id="btn-nombre">Guardar nombre</button>
   </div>
   <div class="card">
-    <h2>💾 Respaldo</h2>
+    <h2>Respaldo y datos</h2>
     <button class="btn sec" id="btn-exportar">Exportar respaldo (archivo)</button>
     <label>Importar respaldo</label>
     <input id="imp" type="file" accept=".json,application/json">
-    <button class="btn sec" id="btn-demo">Cargar clientes de ejemplo (para probar)</button>
+    <hr class="sep">
+    <button class="btn gris" id="btn-demo">Cargar clientes de ejemplo (para probar)</button>
     <button class="btn rojo" id="btn-borrar-todo">Borrar todos los datos</button>
   </div>
   <div class="card">
-    <p class="ayuda">Versión tipo v1: los datos quedan guardados en este celular. Si Raúl la aprueba, el siguiente paso es compartir los datos entre celulares (como la app de los huevos) y conectar el registro por código QR para que el cliente se registre solo.</p>
+    <p class="ayuda"><b>Versión tipo v2.</b> Los datos quedan guardados en este celular. Si Raúl la aprueba, el siguiente paso es compartir los datos entre celulares (como la app de los huevos) y que el cliente se registre solo con un código QR en el mesón.</p>
   </div>
 </section>
 </main>
 
 <nav>
-  <button data-v="inicio" class="on"><span class="ic">🏠</span>Inicio</button>
-  <button data-v="clientes"><span class="ic">👥</span>Clientes</button>
-  <button data-v="registrar"><span class="ic">➕</span>Registrar</button>
-  <button data-v="cumples"><span class="ic">🎂</span>Cumpleaños</button>
-  <button data-v="ajustes"><span class="ic">⚙️</span>Ajustes</button>
+  <button data-v="inicio" class="on"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Inicio</button>
+  <button data-v="clientes"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Clientes</button>
+  <button data-v="registrar"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>Registrar</button>
+  <button data-v="cumples"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21h16"/><path d="M5 21v-4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4"/><path d="M12 15V9"/><path d="M12 6.5a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5z"/><path d="M8 15v-1.5"/><path d="M16 15v-1.5"/></svg>Cumpleaños</button>
+  <button data-v="ajustes"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Ajustes</button>
 </nav>
 <div id="toast"></div>
 
 <script>
 "use strict";
 var CLAVE = "raulito-club-v1";
-var cfgDef = {nombre:"Almacén Donde Raulito", meta:10, tipo:"descuento", pct:10, prod:"", cumplePct:10, color:"#2e7d32"};
+var cfgDef = {nombre:"Almacén Donde Raulito", meta:10, tipo:"descuento", pct:10, prod:"", cumplePct:10, color:"#1f6f43"};
 var st = cargar();
 
 function cargar(){
@@ -194,6 +246,14 @@ function uid(){ return "c" + Date.now().toString(36) + Math.random().toString(36
 function hoyStr(){ var d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
 function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
 function toast(t){ var el=document.getElementById("toast"); el.textContent=t; el.classList.add("ver"); clearTimeout(el._t); el._t=setTimeout(function(){ el.classList.remove("ver"); },2600); }
+
+/* ---------- color: tono oscuro y suave derivados ---------- */
+function hexRgb(hex){ var h=String(hex||"").replace("#",""); if(h.length===3) h=h.split("").map(function(x){return x+x;}).join(""); var n=parseInt(h,16); if(isNaN(n)) return [31,111,67]; return [(n>>16)&255,(n>>8)&255,n&255]; }
+function oscurecer(hex,f){ var c=hexRgb(hex); return "rgb("+Math.round(c[0]*f)+","+Math.round(c[1]*f)+","+Math.round(c[2]*f)+")"; }
+function suavizar(hex){ var c=hexRgb(hex); function m(x){ return Math.round(x+(255-x)*0.9); } return "rgb("+m(c[0])+","+m(c[1])+","+m(c[2])+")"; }
+var AVATARES = ["#7a5c3e","#44607a","#6b4e7e","#38655a","#8a5a44","#546e7a","#75613c","#5d6d4e"];
+function colorAvatar(nombre){ var s=0; for(var i=0;i<nombre.length;i++) s=(s*31+nombre.charCodeAt(i))>>>0; return AVATARES[s%AVATARES.length]; }
+function iniciales(nombre){ var p=nombre.trim().split(/\s+/); return ((p[0]||"").charAt(0)+(p.length>1?p[1].charAt(0):"")).toUpperCase() || "?"; }
 
 /* ---------- lógica pura (probada aparte) ---------- */
 function diasParaCumple(cumple, hoy){
@@ -217,12 +277,12 @@ function fonoWa(fono){
 }
 function msgProgreso(c){
   var f = faltaPara(c);
-  var base = "¡Hola " + c.nombre.split(" ")[0] + "! 👋 Te escribimos de " + st.cfg.nombre + ". ";
-  if(c.recompensas>0) return base + "Tienes una recompensa lista para canjear: " + recompensaTxt() + ". ¡Te esperamos! 🎁";
-  return base + "Ya llevas " + c.visitas + " de " + st.cfg.meta + " visitas" + (f===1 ? ": te falta solo 1 visita" : ": te faltan " + f + " visitas") + " para ganar " + recompensaTxt() + ". ¡Gracias por preferirnos! 🙌";
+  var base = "¡Hola " + c.nombre.split(" ")[0] + "! Te escribimos de " + st.cfg.nombre + ". ";
+  if(c.recompensas>0) return base + "Tienes una recompensa lista para canjear: " + recompensaTxt() + ". ¡Te esperamos!";
+  return base + "Ya llevas " + c.visitas + " de " + st.cfg.meta + " visitas" + (f===1 ? ": te falta solo 1 visita" : ": te faltan " + f + " visitas") + " para ganar " + recompensaTxt() + ". ¡Gracias por preferirnos!";
 }
 function msgCumple(c){
-  return "¡Feliz cumpleaños, " + c.nombre.split(" ")[0] + "! 🎂🎉 Te escribimos de " + st.cfg.nombre + ". Para celebrarte, tienes un " + st.cfg.cumplePct + "% de descuento en tu compra de cumpleaños. Pasa a vernos por Av. El Descanso, Maipú. ¡Que tengas un lindo día! 🥳";
+  return "¡Feliz cumpleaños, " + c.nombre.split(" ")[0] + "! Te escribimos de " + st.cfg.nombre + ". Para celebrarte, tienes un " + st.cfg.cumplePct + "% de descuento en tu compra de cumpleaños. Pasa a vernos por Av. El Descanso, Maipú. ¡Que tengas un lindo día!";
 }
 function ordenarCumples(lista, hoy){
   return lista.filter(function(c){ return c.cumple; }).map(function(c){ return {c:c, dias:diasParaCumple(c.cumple, hoy)}; })
@@ -236,23 +296,22 @@ function registrarVisita(id){
   var gano = false;
   if(c.visitas >= st.cfg.meta){ c.visitas = 0; c.recompensas++; gano = true; }
   guardar(); pintarTodo();
-  toast(gano ? ("🎁 ¡" + c.nombre.split(" ")[0] + " ganó su recompensa!") : ("Visita registrada: " + c.nombre.split(" ")[0] + " lleva " + c.visitas + " de " + st.cfg.meta));
+  toast(gano ? ("¡" + c.nombre.split(" ")[0] + " ganó su recompensa!") : ("Visita registrada · " + c.nombre.split(" ")[0] + ": " + c.visitas + " de " + st.cfg.meta));
 }
 function canjear(id){
   var c = st.clientes.find(function(x){ return x.id===id; }); if(!c || c.recompensas<1) return;
   if(!confirm("¿Canjear la recompensa de " + c.nombre + " (" + recompensaTxt() + ")?")) return;
-  c.recompensas--; guardar(); pintarTodo(); toast("Recompensa canjeada ✓");
+  c.recompensas--; guardar(); pintarTodo(); toast("Recompensa canjeada");
 }
-function wa(url){ window.open(url, "_blank"); }
 function enviarProgreso(id){
   var c = st.clientes.find(function(x){ return x.id===id; }); if(!c) return;
   var f = fonoWa(c.telefono); if(!f){ toast("Este cliente no tiene teléfono válido"); return; }
-  wa("https://wa.me/" + f + "?text=" + encodeURIComponent(msgProgreso(c)));
+  window.open("https://wa.me/" + f + "?text=" + encodeURIComponent(msgProgreso(c)), "_blank");
 }
 function enviarCumple(id){
   var c = st.clientes.find(function(x){ return x.id===id; }); if(!c) return;
   var f = fonoWa(c.telefono); if(!f){ toast("Este cliente no tiene teléfono válido"); return; }
-  wa("https://wa.me/" + f + "?text=" + encodeURIComponent(msgCumple(c)));
+  window.open("https://wa.me/" + f + "?text=" + encodeURIComponent(msgCumple(c)), "_blank");
 }
 function cargarEdicion(id){
   var c = st.clientes.find(function(x){ return x.id===id; }); if(!c) return;
@@ -264,25 +323,36 @@ function cargarEdicion(id){
 }
 
 /* ---------- pintura ---------- */
+var SVG_RELOJ = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+var SVG_REGALO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>';
 function aplicarColor(){
   document.documentElement.style.setProperty("--p", st.cfg.color);
-  document.documentElement.style.setProperty("--ok", st.cfg.color);
+  document.documentElement.style.setProperty("--p-osc", oscurecer(st.cfg.color, 0.78));
+  document.documentElement.style.setProperty("--p-suave", suavizar(st.cfg.color));
   var meta = document.querySelector('meta[name="theme-color"]'); if(meta) meta.setAttribute("content", st.cfg.color);
   document.querySelectorAll("#colores button").forEach(function(b){ b.classList.toggle("sel", b.dataset.c===st.cfg.color); });
 }
 function tarjetaCliente(c, hoy){
   var f = faltaPara(c), pct = Math.min(100, Math.round(100*c.visitas/st.cfg.meta));
   var d = c.cumple ? diasParaCumple(c.cumple, hoy) : null;
-  var h = '<div class="cliente"><div class="nom">' + esc(c.nombre) + '</div>';
-  h += '<div class="det">' + (c.telefono ? esc(c.telefono) : "Sin teléfono") + (c.ultima ? " · Última visita: " + esc(c.ultima) : " · Aún sin visitas") + '</div>';
-  if(d!==null && d<=30) h += ' <span class="chip cumple">🎂 ' + (d===0 ? "¡Cumple HOY!" : "Cumple en " + d + (d===1?" día":" días")) + '</span>';
-  if(c.recompensas>0) h += ' <span class="chip lista">🎁 ' + c.recompensas + ' recompensa lista</span>';
-  h += '<div class="barra"><i style="width:' + pct + '%"></i></div>';
-  h += '<div class="det">' + c.visitas + " de " + st.cfg.meta + " visitas" + (c.recompensas>0 ? "" : (f===0 ? "" : " · le faltan " + f)) + " · total histórico: " + c.visitasTotal + '</div>';
+  var h = '<div class="cliente"><div class="cli-top"><div class="avatar" style="background:' + colorAvatar(c.nombre) + '">' + esc(iniciales(c.nombre)) + '</div>';
+  h += '<div><div class="nom">' + esc(c.nombre) + '</div><div class="det">' + (c.telefono ? esc(c.telefono) : "Sin teléfono") + (c.ultima ? " · Última visita: " + esc(c.ultima) : "") + '</div></div></div>';
+  var chips = "";
+  if(d!==null && d<=30) chips += '<span class="chip cumple">' + SVG_RELOJ + (d===0 ? "Cumple hoy" : "Cumple en " + d + (d===1?" día":" días")) + '</span> ';
+  if(c.recompensas>0) chips += '<span class="chip lista">' + SVG_REGALO + c.recompensas + (c.recompensas===1 ? " recompensa lista" : " recompensas listas") + '</span>';
+  if(chips) h += '<div style="margin-top:10px">' + chips + '</div>';
+  if(st.cfg.meta<=15){
+    h += '<div class="puntos">';
+    for(var i=0;i<st.cfg.meta;i++) h += '<i class="' + (i<c.visitas ? "lleno" : "") + '"></i>';
+    h += '</div>';
+  } else {
+    h += '<div class="barra"><i style="width:' + pct + '%"></i></div>';
+  }
+  h += '<p class="mini"><b>' + c.visitas + " de " + st.cfg.meta + " visitas</b>" + (c.recompensas>0 ? "" : " · le faltan " + f) + " · " + c.visitasTotal + " en total</p>";
   h += '<div class="fila"><button class="btn chico" onclick="registrarVisita(\'' + c.id + '\')">+ Visita</button>';
-  if(c.recompensas>0) h += '<button class="btn chico sec" onclick="canjear(\'' + c.id + '\')">Canjear 🎁</button>';
+  if(c.recompensas>0) h += '<button class="btn chico sec" onclick="canjear(\'' + c.id + '\')">Canjear</button>';
   h += '<button class="btn chico wa" onclick="enviarProgreso(\'' + c.id + '\')">WhatsApp</button>';
-  h += '<button class="btn chico sec" onclick="cargarEdicion(\'' + c.id + '\')">Editar</button></div></div>';
+  h += '<button class="btn chico gris" onclick="cargarEdicion(\'' + c.id + '\')">Editar</button></div></div>';
   return h;
 }
 function pintarTodo(){
@@ -296,22 +366,23 @@ function pintarTodo(){
   document.getElementById("s-visitas-hoy").textContent = visitasHoy;
   document.getElementById("s-listas").textContent = listas;
   document.getElementById("s-cumples").textContent = cumples.filter(function(x){ return x.dias<=7; }).length;
-  document.getElementById("como-funciona").textContent = "Cada vez que un cliente registrado compra, tocas «+ Visita» en su tarjeta. Al juntar " + st.cfg.meta + " visitas gana " + recompensaTxt() + ". Con el botón WhatsApp le llega su progreso («llevas X, te faltan Y»). En su cumpleaños tiene un " + st.cfg.cumplePct + "% de descuento y la app te avisa para felicitarlo.";
+  document.getElementById("como-funciona").innerHTML = "Cada vez que un cliente registrado compra, tocas <b>+ Visita</b> en su tarjeta. Al juntar <b>" + st.cfg.meta + " visitas</b> gana <b>" + esc(recompensaTxt()) + "</b>. Con el botón WhatsApp le llega su progreso («llevas X, te faltan Y»). En su cumpleaños tiene un <b>" + st.cfg.cumplePct + "% de descuento</b> y la app te avisa para felicitarlo.";
   var cerca = st.clientes.filter(function(c){ return c.recompensas>0 || (c.visitas>0 && faltaPara(c)<=2); })
     .sort(function(a,b){ return (b.recompensas-a.recompensas) || (faltaPara(a)-faltaPara(b)); }).slice(0,6);
-  document.getElementById("cerca").innerHTML = cerca.length ? cerca.map(function(c){ return tarjetaCliente(c, hoy); }).join("") : '<p class="vacio">Todavía nadie está cerca. Registra clientes y suma sus visitas.</p>';
+  document.getElementById("cerca").innerHTML = cerca.length ? cerca.map(function(c){ return tarjetaCliente(c, hoy); }).join("") : '<p class="vacio">Todavía nadie está cerca de su recompensa.<br>Registra clientes y suma sus visitas.</p>';
   var c7 = cumples.filter(function(x){ return x.dias<=7; });
   document.getElementById("cumples-inicio").innerHTML = c7.length ? c7.map(function(x){ return tarjetaCliente(x.c, hoy); }).join("") : '<p class="vacio">Sin cumpleaños en los próximos 7 días.</p>';
   var q = (document.getElementById("buscar").value || "").toLowerCase();
   var lista = st.clientes.filter(function(c){ return !q || c.nombre.toLowerCase().indexOf(q)>=0 || String(c.telefono).indexOf(q)>=0; })
     .slice().sort(function(a,b){ return a.nombre.localeCompare(b.nombre); });
-  document.getElementById("lista-clientes").innerHTML = lista.length ? lista.map(function(c){ return tarjetaCliente(c, hoy); }).join("") : '<p class="vacio">No hay clientes' + (q ? " con ese criterio" : " todavía. Registra el primero en la pestaña Registrar") + '.</p>';
+  document.getElementById("lista-clientes").innerHTML = lista.length ? lista.map(function(c){ return tarjetaCliente(c, hoy); }).join("") : '<p class="vacio">' + (q ? "Ningún cliente coincide con esa búsqueda." : "Aún no hay clientes registrados.<br>Registra el primero en la pestaña Registrar.") + '</p>';
   var c30 = cumples.filter(function(x){ return x.dias<=30; });
   document.getElementById("cumples-lista").innerHTML = c30.length ? c30.map(function(x){
       var c = x.c;
-      var h = '<div class="cliente"><div class="nom">' + esc(c.nombre) + ' <span class="chip cumple">' + (x.dias===0 ? "¡HOY! 🎉" : "en " + x.dias + (x.dias===1?" día":" días")) + '</span></div>';
-      h += '<div class="det">Cumpleaños: ' + esc(c.cumple ? c.cumple.slice(5) : "") + ' · Descuento de cumpleaños: ' + st.cfg.cumplePct + '%</div>';
-      h += '<div class="fila"><button class="btn chico wa" onclick="enviarCumple(\'' + c.id + '\')">🎂 Felicitar por WhatsApp</button></div></div>';
+      var h = '<div class="cliente"><div class="cli-top"><div class="avatar" style="background:' + colorAvatar(c.nombre) + '">' + esc(iniciales(c.nombre)) + '</div>';
+      h += '<div><div class="nom">' + esc(c.nombre) + '</div><div class="det">' + (x.dias===0 ? "Cumple hoy" : "Cumple en " + x.dias + (x.dias===1?" día":" días")) + " · " + esc(c.cumple ? c.cumple.slice(5) : "") + '</div></div></div>';
+      h += '<p class="mini">Descuento de cumpleaños: <b>' + st.cfg.cumplePct + '%</b> en su compra</p>';
+      h += '<div class="fila"><button class="btn chico wa" onclick="enviarCumple(\'' + c.id + '\')">Felicitar por WhatsApp</button></div></div>';
       return h;
     }).join("") : '<p class="vacio">Sin cumpleaños en los próximos 30 días.</p>';
 }
@@ -329,11 +400,11 @@ document.getElementById("btn-nuevo").addEventListener("click", function(){
   var fono = document.getElementById("n-fono").value.trim();
   var cumple = document.getElementById("n-cumple").value;
   if(!nombre){ toast("Falta el nombre"); return; }
-  if(!fono){ toast("Falta el teléfono (lo necesitamos para avisarle)"); return; }
+  if(!fono){ toast("Falta el teléfono: lo necesitamos para avisarle"); return; }
   st.clientes.push({id:uid(), nombre:nombre, telefono:fono, cumple:cumple||"", visitas:0, visitasTotal:0, recompensas:0, ultima:"", creado:hoyStr()});
   guardar();
   document.getElementById("n-nombre").value = ""; document.getElementById("n-fono").value = ""; document.getElementById("n-cumple").value = "";
-  pintarTodo(); toast("Cliente registrado ✓"); irA("clientes");
+  pintarTodo(); toast("Cliente registrado"); irA("clientes");
 });
 document.getElementById("btn-editar").addEventListener("click", function(){
   var id = document.getElementById("e-id").value; if(!id){ toast("Primero toca «Editar» en un cliente"); return; }
@@ -341,7 +412,7 @@ document.getElementById("btn-editar").addEventListener("click", function(){
   c.nombre = document.getElementById("e-nombre").value.trim() || c.nombre;
   c.telefono = document.getElementById("e-fono").value.trim();
   c.cumple = document.getElementById("e-cumple").value || "";
-  guardar(); pintarTodo(); toast("Cambios guardados ✓"); irA("clientes");
+  guardar(); pintarTodo(); toast("Cambios guardados"); irA("clientes");
 });
 document.getElementById("btn-borrar").addEventListener("click", function(){
   var id = document.getElementById("e-id").value; if(!id){ toast("Primero toca «Editar» en un cliente"); return; }
@@ -356,20 +427,20 @@ document.getElementById("btn-reglas").addEventListener("click", function(){
   st.cfg.pct = Math.max(1, parseInt(document.getElementById("a-pct").value,10) || 10);
   st.cfg.prod = document.getElementById("a-prod").value.trim();
   st.cfg.cumplePct = Math.max(0, parseInt(document.getElementById("a-cumple-pct").value,10) || 0);
-  guardar(); pintarTodo(); toast("Reglas guardadas ✓");
+  guardar(); pintarTodo(); toast("Reglas guardadas");
 });
 document.getElementById("btn-nombre").addEventListener("click", function(){
-  st.cfg.nombre = document.getElementById("a-nombre").value.trim() || st.cfg.nombre; guardar(); pintarTodo(); toast("Nombre guardado ✓");
+  st.cfg.nombre = document.getElementById("a-nombre").value.trim() || st.cfg.nombre; guardar(); pintarTodo(); toast("Nombre guardado");
 });
-var PALETA = ["#2e7d32","#1565c0","#c62828","#ef6c00","#6a1b9a","#00695c","#4e342e","#37474f"];
+var PALETA = ["#1f6f43","#17557e","#8c2f2f","#b25b12","#5b4a8a","#0f6a63","#5d4232","#3d4a57"];
 var contCol = document.getElementById("colores");
 PALETA.forEach(function(col){
-  var b = document.createElement("button"); b.style.background = col; b.dataset.c = col; b.title = col;
+  var b = document.createElement("button"); b.style.background = col; b.dataset.c = col; b.title = col; b.setAttribute("aria-label", "Color " + col);
   b.addEventListener("click", function(){ st.cfg.color = col; guardar(); aplicarColor(); pintarTodo(); });
   contCol.appendChild(b);
 });
 document.getElementById("btn-color").addEventListener("click", function(){
-  st.cfg.color = document.getElementById("a-color").value; guardar(); aplicarColor(); pintarTodo(); toast("Color aplicado 🎨");
+  st.cfg.color = document.getElementById("a-color").value; guardar(); aplicarColor(); pintarTodo(); toast("Color aplicado");
 });
 document.getElementById("btn-exportar").addEventListener("click", function(){
   var blob = new Blob([JSON.stringify(st, null, 2)], {type:"application/json"});
@@ -380,7 +451,7 @@ document.getElementById("imp").addEventListener("change", function(ev){
   var f = ev.target.files[0]; if(!f) return;
   var r = new FileReader();
   r.onload = function(){
-    try{ var d = JSON.parse(r.result); if(!d.clientes || !d.cfg) throw 0; st = d; guardar(); sincronizarAjustes(); aplicarColor(); pintarTodo(); toast("Respaldo importado ✓"); }
+    try{ var d = JSON.parse(r.result); if(!d.clientes || !d.cfg) throw 0; st = d; guardar(); sincronizarAjustes(); aplicarColor(); pintarTodo(); toast("Respaldo importado"); }
     catch(e){ toast("Ese archivo no es un respaldo válido"); }
   };
   r.readAsText(f);
