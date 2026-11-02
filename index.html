@@ -323,7 +323,9 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
               <div><label>Tipo de recompensa</label><select id="a-tipo"><option value="descuento">Descuento en su próxima compra</option><option value="producto">Producto gratis</option></select></div>
               <div><label>Descuento de la recompensa (%)</label><input id="a-pct" type="number" min="1" max="90"></div>
               <div><label>Descuento por cumpleaños (%)</label><input id="a-cumple-pct" type="number" min="0" max="90"></div>
+              <div><label>Compra desde ($) que da visita extra</label><input id="a-monto" type="number" min="0" step="500"></div>
             </div>
+            <p class="ayuda" style="margin-top:2px">Si un cliente compra por ese monto o más, en su ficha aparece el botón <b>Compra mayor</b>: le das una visita extra ese mismo día, además de la de su tap. Déjalo en 0 para desactivar la regla.</p>
             <label>Producto gratis (si eliges producto)</label>
             <input id="a-prod" type="text" placeholder="Ej: una bebida de 1,5 L">
             <button class="btn bloque" id="btn-reglas">Guardar reglas</button>
@@ -379,11 +381,12 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
 <script>
 "use strict";
 var CLAVE = "raulito-club-v1";
-var cfgDef = {nombre:"Almacén Donde Raulito", meta:10, tipo:"descuento", pct:10, prod:"", cumplePct:10, color:"#1f6f43", diasInactivo:21};
+var cfgDef = {nombre:"Almacén Donde Raulito", meta:10, tipo:"descuento", pct:10, prod:"", cumplePct:10, color:"#1f6f43", diasInactivo:21, montoBonus:20000};
 var st = cargar();
 if(!st.avisos) st.avisos = {};
 if(!st.camp) st.camp = {texto:"", ronda:""};
 if(!st.cfg.diasInactivo) st.cfg.diasInactivo = 21;
+if(st.cfg.montoBonus===undefined) st.cfg.montoBonus = 20000;
 
 function cargar(){
   try{ var d = JSON.parse(localStorage.getItem(CLAVE)); if(d && d.clientes && d.cfg) return d; }catch(e){}
@@ -549,13 +552,25 @@ function marcarCamp(id, deshacer){
 }
 
 /* ---------- acciones ---------- */
-function registrarVisita(id){
-  var c = st.clientes.find(function(x){ return x.id===id; }); if(!c) return;
-  c.visitas++; c.visitasTotal++; c.ultima = hoyStr();
+function montoTxt(n){ return "$" + Number(n||0).toLocaleString("es-CL"); }
+function sumarVisita(c){
+  c.visitas++; c.visitasTotal++;
   var gano = false;
   if(c.visitas >= st.cfg.meta){ c.visitas = 0; c.recompensas++; gano = true; }
+  return gano;
+}
+function registrarVisita(id){
+  var c = st.clientes.find(function(x){ return x.id===id; }); if(!c) return;
+  var gano = sumarVisita(c); c.ultima = hoyStr();
   guardar(); pintarTodo();
   toast(gano ? ("¡" + c.nombre.split(" ")[0] + " ganó su recompensa!") : ("Visita registrada · " + c.nombre.split(" ")[0] + ": " + c.visitas + " de " + st.cfg.meta));
+}
+function registrarBonus(id){
+  var c = st.clientes.find(function(x){ return x.id===id; }); if(!c) return;
+  var gano = sumarVisita(c);
+  c.bonus = (c.bonus||0) + 1; c.ultimoBonus = hoyStr(); c.ultima = hoyStr();
+  guardar(); pintarTodo();
+  toast(gano ? ("¡" + c.nombre.split(" ")[0] + " ganó su recompensa con su compra mayor!") : ("Visita extra por compra mayor · " + c.nombre.split(" ")[0] + ": " + c.visitas + " de " + st.cfg.meta));
 }
 function canjear(id){
   var c = st.clientes.find(function(x){ return x.id===id; }); if(!c || c.recompensas<1) return;
@@ -604,6 +619,7 @@ function chipsHTML(c, hoy){
 function botonesHTML(c, sm){
   var cl = sm ? "btn sm" : "btn sm";
   var h = '<button class="' + cl + '" onclick="registrarVisita(\'' + c.id + '\')">+ Visita</button>';
+  if(st.cfg.montoBonus>0) h += '<button class="' + cl + ' sec" title="Compró por ' + montoTxt(st.cfg.montoBonus) + ' o más: dale una visita extra" onclick="registrarBonus(\'' + c.id + '\')">Compra mayor +1</button>';
   if(c.recompensas>0) h += '<button class="' + cl + ' sec" onclick="canjear(\'' + c.id + '\')">Canjear</button>';
   h += '<button class="' + cl + ' wa" onclick="enviarProgreso(\'' + c.id + '\')">WhatsApp</button>';
   h += '<button class="' + cl + ' gris" onclick="cargarEdicion(\'' + c.id + '\')">Editar</button>';
@@ -617,7 +633,7 @@ function tarjetaCliente(c, hoy){
   if(chips) h += '<div style="margin-top:10px">' + chips + '</div>';
   if(st.cfg.meta<=15) h += '<div style="margin-top:11px">' + puntosHTML(c,"") + '</div>';
   else h += '<div class="barra"><i style="width:' + pct + '%"></i></div>';
-  h += '<p class="mini"><b>' + c.visitas + " de " + st.cfg.meta + " visitas</b>" + (c.recompensas>0 ? "" : " · le faltan " + f) + " · " + c.visitasTotal + " en total</p>";
+  h += '<p class="mini"><b>' + c.visitas + " de " + st.cfg.meta + " visitas</b>" + (c.recompensas>0 ? "" : " · le faltan " + f) + " · " + c.visitasTotal + " en total" + (c.bonus ? " · " + c.bonus + (c.bonus===1 ? " extra" : " extras") + " por compra mayor" : "") + "</p>";
   h += '<div class="fila">' + botonesHTML(c) + '</div></div>';
   return h;
 }
@@ -647,7 +663,7 @@ function pintarTodo(){
   document.getElementById("s-visitas-hoy").textContent = visitasHoy;
   document.getElementById("s-listas").textContent = listas;
   document.getElementById("s-cumples").textContent = cumples.filter(function(x){ return x.dias<=7; }).length;
-  document.getElementById("como-funciona").innerHTML = "Cada vez que un cliente registrado compra, tocas <b>+ Visita</b> en su ficha. Al juntar <b>" + st.cfg.meta + " visitas</b> gana <b>" + esc(recompensaTxt()) + "</b>. Con el botón WhatsApp le llega su progreso («llevas X, te faltan Y»). En su cumpleaños tiene un <b>" + st.cfg.cumplePct + "% de descuento</b> y la app te avisa para felicitarlo.";
+  document.getElementById("como-funciona").innerHTML = "Cada vez que un cliente registrado compra, tocas <b>+ Visita</b> en su ficha. Al juntar <b>" + st.cfg.meta + " visitas</b> gana <b>" + esc(recompensaTxt()) + "</b>. Con el botón WhatsApp le llega su progreso («llevas X, te faltan Y»). En su cumpleaños tiene un <b>" + st.cfg.cumplePct + "% de descuento</b> y la app te avisa para felicitarlo." + (st.cfg.montoBonus>0 ? " Si compra por <b>" + montoTxt(st.cfg.montoBonus) + "</b> o más, dale una visita extra con el botón <b>Compra mayor</b> de su ficha." : "");
   var cerca = st.clientes.filter(function(c){ return c.recompensas>0 || (c.visitas>0 && faltaPara(c)<=2); })
     .sort(function(a,b){ return (b.recompensas-a.recompensas) || (faltaPara(a)-faltaPara(b)); }).slice(0,6);
   document.getElementById("cerca").innerHTML = cerca.length ? cerca.map(function(c){ return tarjetaCliente(c, hoy); }).join("") : '<p class="vacio">Todavía nadie está cerca de su recompensa.<br>Registra clientes y suma sus visitas.</p>';
@@ -712,6 +728,7 @@ document.getElementById("btn-reglas").addEventListener("click", function(){
   st.cfg.pct = Math.max(1, parseInt(document.getElementById("a-pct").value,10) || 10);
   st.cfg.prod = document.getElementById("a-prod").value.trim();
   st.cfg.cumplePct = Math.max(0, parseInt(document.getElementById("a-cumple-pct").value,10) || 0);
+  st.cfg.montoBonus = Math.max(0, parseInt(document.getElementById("a-monto").value,10) || 0);
   guardar(); pintarTodo(); toast("Reglas guardadas");
 });
 document.getElementById("btn-nombre").addEventListener("click", function(){
@@ -779,6 +796,7 @@ function sincronizarAjustes(){
   document.getElementById("a-pct").value = st.cfg.pct;
   document.getElementById("a-prod").value = st.cfg.prod || "";
   document.getElementById("a-cumple-pct").value = st.cfg.cumplePct;
+  document.getElementById("a-monto").value = st.cfg.montoBonus || 0;
   document.getElementById("a-nombre").value = st.cfg.nombre;
   document.getElementById("a-color").value = st.cfg.color;
 }
