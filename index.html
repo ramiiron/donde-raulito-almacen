@@ -256,7 +256,7 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
         <h3>Nuevo cliente</h3>
         <div class="form-grid">
           <div><label>Nombre</label><input id="n-nombre" type="text" placeholder="Ej: María González" autocomplete="off"></div>
-          <div><label>Teléfono (WhatsApp)</label><input id="n-fono" type="tel" placeholder="Ej: 9 1234 5678" autocomplete="off"></div>
+          <div><label>Teléfono (WhatsApp)</label><input id="n-fono" type="tel" placeholder="Ej: +56 9 1234 5678" autocomplete="off"></div>
         </div>
         <label>Fecha de nacimiento</label>
         <input id="n-cumple" type="date">
@@ -420,11 +420,20 @@ function faltaPara(c){ return Math.max(0, st.cfg.meta - c.visitas); }
 function recompensaTxt(){
   return st.cfg.tipo==="producto" ? (st.cfg.prod ? st.cfg.prod : "un producto gratis") : ("un " + st.cfg.pct + "% de descuento en tu próxima compra");
 }
-function fonoWa(fono){
+function fonoCanonico(fono){
+  // Formato oficial del club: celular chileno +56 9 XXXX XXXX (11 digitos, parte con 569)
   var d = String(fono||"").replace(/\D/g,"");
-  if(d.length===9 && d.charAt(0)==="9") d = "56" + d;
-  else if(d.length===8) d = "569" + d;
-  return d;
+  if(d.charAt(0)==="0") d = d.slice(1);
+  if(d.length===11 && d.indexOf("569")===0) return d;
+  if(d.length===9 && d.charAt(0)==="9") return "56" + d;
+  if(d.length===8) return "569" + d;
+  return "";
+}
+function fonoWa(fono){ return fonoCanonico(fono); }
+function fonoFmt(fono){
+  var d = fonoCanonico(fono);
+  if(!d) return String(fono||"");
+  return "+56 9 " + d.slice(3,7) + " " + d.slice(7);
 }
 function msgProgreso(c){
   var f = faltaPara(c);
@@ -628,7 +637,7 @@ function botonesHTML(c, sm){
 function tarjetaCliente(c, hoy){
   var f = faltaPara(c), pct = Math.min(100, Math.round(100*c.visitas/st.cfg.meta));
   var h = '<div class="cliente"><div class="cli-top"><div class="avatar" style="background:' + colorAvatar(c.nombre) + '">' + esc(iniciales(c.nombre)) + '</div>';
-  h += '<div><div class="nom">' + esc(c.nombre) + '</div><div class="det">' + (c.telefono ? esc(c.telefono) : "Sin teléfono") + (c.ultima ? " · Última visita: " + esc(c.ultima) : "") + '</div></div></div>';
+  h += '<div><div class="nom">' + esc(c.nombre) + '</div><div class="det">' + (c.telefono ? esc(fonoFmt(c.telefono)) : "Sin teléfono") + (c.ultima ? " · Última visita: " + esc(c.ultima) : "") + '</div></div></div>';
   var chips = chipsHTML(c, hoy);
   if(chips) h += '<div style="margin-top:10px">' + chips + '</div>';
   if(st.cfg.meta<=15) h += '<div style="margin-top:11px">' + puntosHTML(c,"") + '</div>';
@@ -643,7 +652,7 @@ function tablaClientes(lista, hoy){
   lista.forEach(function(c){
     var f = faltaPara(c);
     h += '<tr><td><div class="cel-cliente"><div class="avatar" style="background:' + colorAvatar(c.nombre) + '">' + esc(iniciales(c.nombre)) + '</div><div><div class="nom">' + esc(c.nombre) + '</div><div class="sub">' + (c.ultima ? "Última visita: " + esc(c.ultima) : "Sin visitas aún") + '</div></div></div></td>';
-    h += '<td>' + (c.telefono ? esc(c.telefono) : '<span class="sub">Sin teléfono</span>') + '</td>';
+    h += '<td>' + (c.telefono ? esc(fonoFmt(c.telefono)) : '<span class="sub">Sin teléfono</span>') + '</td>';
     h += '<td>' + puntosHTML(c,"sm") + '</td>';
     h += '<td><b>' + c.visitas + " / " + st.cfg.meta + '</b> <span class="sub">(' + c.visitasTotal + ' total)</span></td>';
     h += '<td>' + (chipsHTML(c, hoy) || '<span class="chip neutro">Al día</span>') + '</td>';
@@ -702,7 +711,9 @@ document.getElementById("btn-nuevo").addEventListener("click", function(){
   var cumple = document.getElementById("n-cumple").value;
   if(!nombre){ toast("Falta el nombre"); return; }
   if(!fono){ toast("Falta el teléfono: lo necesitamos para avisarle"); return; }
-  st.clientes.push({id:uid(), nombre:nombre, telefono:fono, cumple:cumple||"", visitas:0, visitasTotal:0, recompensas:0, ultima:"", creado:hoyStr()});
+  var fonoOk = fonoCanonico(fono);
+  if(!fonoOk){ toast("Ese teléfono no es un celular chileno válido (formato +56 9 XXXX XXXX)"); return; }
+  st.clientes.push({id:uid(), nombre:nombre, telefono:fonoOk, cumple:cumple||"", visitas:0, visitasTotal:0, recompensas:0, ultima:"", creado:hoyStr()});
   guardar();
   document.getElementById("n-nombre").value = ""; document.getElementById("n-fono").value = ""; document.getElementById("n-cumple").value = "";
   pintarTodo(); toast("Cliente registrado"); irA("clientes");
@@ -711,7 +722,12 @@ document.getElementById("btn-editar").addEventListener("click", function(){
   var id = document.getElementById("e-id").value; if(!id){ toast("Primero toca «Editar» en un cliente"); return; }
   var c = st.clientes.find(function(x){ return x.id===id; }); if(!c) return;
   c.nombre = document.getElementById("e-nombre").value.trim() || c.nombre;
-  c.telefono = document.getElementById("e-fono").value.trim();
+  var fonoEd = document.getElementById("e-fono").value.trim();
+  if(fonoEd){
+    var fonoEdOk = fonoCanonico(fonoEd);
+    if(!fonoEdOk){ toast("Ese teléfono no es un celular chileno válido (formato +56 9 XXXX XXXX)"); return; }
+    c.telefono = fonoEdOk;
+  }
   c.cumple = document.getElementById("e-cumple").value || "";
   guardar(); pintarTodo(); toast("Cambios guardados"); irA("clientes");
 });
