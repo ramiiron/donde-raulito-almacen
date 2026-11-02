@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Donde Raulito — Club de Clientes</title>
+<meta name="theme-color" content="#2e7d32">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<style>
+:root{--p:#2e7d32;--p-osc:#1b5e20;--fondo:#f6f4ef;--card:#ffffff;--txt:#26221c;--mut:#7a7263;--borde:#e5dfd2;--ok:#2e7d32;--rojo:#c62828}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--fondo);color:var(--txt);padding-bottom:86px}
+header{background:var(--p);color:#fff;padding:16px 16px 12px;position:sticky;top:0;z-index:5}
+header h1{font-size:20px;line-height:1.2}
+header p{font-size:12.5px;opacity:.9;margin-top:2px}
+main{max-width:560px;margin:0 auto;padding:14px}
+.vista{display:none}.vista.activa{display:block}
+.card{background:var(--card);border:1px solid var(--borde);border-radius:14px;padding:14px;margin-bottom:12px}
+.card h2{font-size:16px;margin-bottom:8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--card);border:1px solid var(--borde);border-radius:14px;padding:12px;text-align:center}
+.stat b{display:block;font-size:24px;color:var(--p)}
+.stat span{font-size:12px;color:var(--mut)}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
+input,select,textarea{width:100%;padding:11px;border:1px solid var(--borde);border-radius:10px;font-size:16px;background:#fff;color:var(--txt)}
+button{font-family:inherit;cursor:pointer}
+.btn{display:block;width:100%;padding:13px;border:none;border-radius:11px;background:var(--p);color:#fff;font-size:16px;font-weight:600;margin-top:12px}
+.btn:active{background:var(--p-osc)}
+.btn.sec{background:#fff;color:var(--p);border:1.5px solid var(--p)}
+.btn.chico{width:auto;display:inline-block;padding:8px 13px;font-size:14px;margin-top:0;border-radius:9px}
+.btn.wa{background:#25d366;color:#123b22}
+.btn.rojo{background:#fff;color:var(--rojo);border:1.5px solid var(--rojo)}
+.cliente{border:1px solid var(--borde);border-radius:12px;padding:11px;margin-bottom:9px;background:#fff}
+.cliente .nom{font-weight:700;font-size:15.5px}
+.cliente .det{font-size:12.5px;color:var(--mut);margin-top:1px}
+.barra{height:9px;background:#eee7d8;border-radius:99px;overflow:hidden;margin:8px 0 4px}
+.barra i{display:block;height:100%;background:var(--p);border-radius:99px}
+.fila{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+.chip{display:inline-block;background:#eef4ee;color:var(--p-osc);border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600}
+.chip.cumple{background:#fff3e0;color:#a35b00}
+.chip.lista{background:#e8f5e9;color:var(--ok);border:1px solid var(--ok)}
+.vacio{color:var(--mut);font-size:14px;text-align:center;padding:16px 6px}
+nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--borde);display:flex;z-index:6}
+nav button{flex:1;background:none;border:none;padding:9px 2px 11px;font-size:11px;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button .ic{font-size:20px}
+nav button.on{color:var(--p);font-weight:700}
+#toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:#26221c;color:#fff;padding:11px 18px;border-radius:99px;font-size:14.5px;opacity:0;pointer-events:none;transition:.25s;z-index:9;max-width:92vw;text-align:center}
+#toast.ver{opacity:1;transform:translateX(-50%) translateY(0)}
+.colores{display:flex;gap:9px;flex-wrap:wrap;margin-top:6px}
+.colores button{width:40px;height:40px;border-radius:50%;border:3px solid transparent;padding:0}
+.colores button.sel{border-color:#26221c}
+.ayuda{font-size:12.5px;color:var(--mut);margin-top:6px;line-height:1.45}
+a{color:var(--p)}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="h-nombre">Almacén Donde Raulito</h1>
+  <p>Club de Clientes · Av. El Descanso, Maipú</p>
+</header>
+
+<main>
+<!-- INICIO -->
+<section id="v-inicio" class="vista activa">
+  <div class="grid2">
+    <div class="stat"><b id="s-clientes">0</b><span>Clientes registrados</span></div>
+    <div class="stat"><b id="s-visitas-hoy">0</b><span>Visitas hoy</span></div>
+    <div class="stat"><b id="s-listas">0</b><span>Recompensas listas 🎁</span></div>
+    <div class="stat"><b id="s-cumples">0</b><span>Cumpleaños en 7 días 🎂</span></div>
+  </div>
+  <div style="height:12px"></div>
+  <div class="card">
+    <h2>⭐ Cerca de su recompensa</h2>
+    <div id="cerca"></div>
+  </div>
+  <div class="card">
+    <h2>🎂 Cumpleaños próximos</h2>
+    <div id="cumples-inicio"></div>
+  </div>
+  <div class="card">
+    <h2>¿Cómo funciona?</h2>
+    <p class="ayuda" id="como-funciona"></p>
+  </div>
+</section>
+
+<!-- CLIENTES -->
+<section id="v-clientes" class="vista">
+  <input id="buscar" type="search" placeholder="🔍 Buscar por nombre o teléfono…">
+  <div style="height:10px"></div>
+  <div id="lista-clientes"></div>
+</section>
+
+<!-- REGISTRAR -->
+<section id="v-registrar" class="vista">
+  <div class="card">
+    <h2>➕ Nuevo cliente</h2>
+    <label>Nombre</label>
+    <input id="n-nombre" type="text" placeholder="Ej: María González" autocomplete="off">
+    <label>Teléfono (WhatsApp)</label>
+    <input id="n-fono" type="tel" placeholder="Ej: 9 1234 5678" autocomplete="off">
+    <label>Fecha de nacimiento</label>
+    <input id="n-cumple" type="date">
+    <p class="ayuda">Con la fecha de nacimiento la app avisa cuándo viene su cumpleaños, para felicitarlo y darle su descuento.</p>
+    <button class="btn" id="btn-nuevo">Registrar cliente</button>
+  </div>
+  <div class="card">
+    <h2>✏️ Editar cliente</h2>
+    <p class="ayuda">Toca «Editar» en la lista de clientes y sus datos se cargan aquí.</p>
+    <input id="e-id" type="hidden">
+    <label>Nombre</label><input id="e-nombre" type="text">
+    <label>Teléfono (WhatsApp)</label><input id="e-fono" type="tel">
+    <label>Fecha de nacimiento</label><input id="e-cumple" type="date">
+    <button class="btn sec" id="btn-editar">Guardar cambios</button>
+    <button class="btn rojo" id="btn-borrar">Borrar cliente</button>
+  </div>
+</section>
+
+<!-- CUMPLEAÑOS -->
+<section id="v-cumples" class="vista">
+  <div class="card">
+    <h2>🎂 Próximos 30 días</h2>
+    <div id="cumples-lista"></div>
+  </div>
+</section>
+
+<!-- AJUSTES -->
+<section id="v-ajustes" class="vista">
+  <div class="card">
+    <h2>🎁 Regla de la recompensa</h2>
+    <label>¿Cada cuántas visitas se gana la recompensa?</label>
+    <input id="a-meta" type="number" min="1" max="50">
+    <label>Tipo de recompensa</label>
+    <select id="a-tipo">
+      <option value="descuento">Descuento en su próxima compra (%)</option>
+      <option value="producto">Producto gratis</option>
+    </select>
+    <label id="a-pct-label">Descuento de la recompensa (%)</label>
+    <input id="a-pct" type="number" min="1" max="90">
+    <label>Producto gratis (si eliges producto)</label>
+    <input id="a-prod" type="text" placeholder="Ej: una bebida de 1,5 L">
+    <label>Descuento por cumpleaños (%)</label>
+    <input id="a-cumple-pct" type="number" min="0" max="90">
+    <button class="btn" id="btn-reglas">Guardar reglas</button>
+  </div>
+  <div class="card">
+    <h2>🎨 Color del negocio</h2>
+    <p class="ayuda">Raúl está definiendo los colores: elige uno ahora y cámbialo cuando quiera, la app se tiñe al instante.</p>
+    <div class="colores" id="colores"></div>
+    <label>O un color propio</label>
+    <input id="a-color" type="color" style="height:48px;padding:4px">
+    <button class="btn sec" id="btn-color">Aplicar color propio</button>
+  </div>
+  <div class="card">
+    <h2>🏪 Datos del negocio</h2>
+    <label>Nombre</label><input id="a-nombre" type="text">
+    <button class="btn" id="btn-nombre">Guardar nombre</button>
+  </div>
+  <div class="card">
+    <h2>💾 Respaldo</h2>
+    <button class="btn sec" id="btn-exportar">Exportar respaldo (archivo)</button>
+    <label>Importar respaldo</label>
+    <input id="imp" type="file" accept=".json,application/json">
+    <button class="btn sec" id="btn-demo">Cargar clientes de ejemplo (para probar)</button>
+    <button class="btn rojo" id="btn-borrar-todo">Borrar todos los datos</button>
+  </div>
+  <div class="card">
+    <p class="ayuda">Versión tipo v1: los datos quedan guardados en este celular. Si Raúl la aprueba, el siguiente paso es compartir los datos entre celulares (como la app de los huevos) y conectar el registro por código QR para que el cliente se registre solo.</p>
+  </div>
+</section>
+</main>
+
+<nav>
+  <button data-v="inicio" class="on"><span class="ic">🏠</span>Inicio</button>
+  <button data-v="clientes"><span class="ic">👥</span>Clientes</button>
+  <button data-v="registrar"><span class="ic">➕</span>Registrar</button>
+  <button data-v="cumples"><span class="ic">🎂</span>Cumpleaños</button>
+  <button data-v="ajustes"><span class="ic">⚙️</span>Ajustes</button>
+</nav>
+<div id="toast"></div>
+
+<script>
+"use strict";
+var CLAVE = "raulito-club-v1";
+var cfgDef = {nombre:"Almacén Donde Raulito", meta:10, tipo:"descuento", pct:10, prod:"", cumplePct:10, color:"#2e7d32"};
+var st = cargar();
+
+function cargar(){
+  try{ var d = JSON.parse(localStorage.getItem(CLAVE)); if(d && d.clientes && d.cfg) return d; }catch(e){}
+  return {clientes:[], cfg:Object.assign({}, cfgDef)};
+}
+function guardar(){ localStorage.setItem(CLAVE, JSON.stringify(st)); }
+function uid(){ return "c" + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function hoyStr(){ var d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+function toast(t){ var el=document.getElementById("toast"); el.textContent=t; el.classList.add("ver"); clearTimeout(el._t); el._t=setTimeout(function(){ el.classList.remove("ver"); },2600); }
+
+/* ---------- lógica pura (probada aparte) ---------- */
+function diasParaCumple(cumple, hoy){
+  if(!cumple) return null;
+  var p = cumple.split("-"); if(p.length<2) return null;
+  var mes = parseInt(p[p.length-2],10), dia = parseInt(p[p.length-1],10);
+  var h = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+  var prox = new Date(hoy.getFullYear(), mes-1, dia);
+  if(prox < h) prox = new Date(hoy.getFullYear()+1, mes-1, dia);
+  return Math.round((prox - h)/86400000);
+}
+function faltaPara(c){ return Math.max(0, st.cfg.meta - c.visitas); }
+function recompensaTxt(){
+  return st.cfg.tipo==="producto" ? (st.cfg.prod ? st.cfg.prod : "un producto gratis") : ("un " + st.cfg.pct + "% de descuento en tu próxima compra");
+}
+function fonoWa(fono){
+  var d = String(fono||"").replace(/\D/g,"");
+  if(d.length===9 && d.charAt(0)==="9") d = "56" + d;
+  else if(d.length===8) d = "569" + d;
+  return d;
+}
+function msgProgreso(c){
+  var f = faltaPara(c);
+  var base = "¡Hola " + c.nombre.split(" ")[0] + "! 👋 Te escribimos de " + st.cfg.nombre + ". ";
+  if(c.recompensas>0) return base + "Tienes una recompensa lista para canjear: " + recompensaTxt() + ". ¡Te esperamos! 🎁";
+  return base + "Ya llevas " + c.visitas + " de " + st.cfg.meta + " visitas" + (f===1 ? ": te falta solo 1 visita" : ": te faltan " + f + " visitas") + " para ganar " + recompensaTxt() + ". ¡Gracias por preferirnos! 🙌";
+}
+function msgCumple(c){
+  return "¡Feliz cumpleaños, " + c.nombre.split(" ")[0] + "! 🎂🎉 Te escribimos de " + st.cfg.nombre + ". Para celebrarte, tienes un " + st.cfg.cumplePct + "% de descuento en tu compra de cumpleaños. Pasa a vernos por Av. El Descanso, Maipú. ¡Que tengas un lindo día! 🥳";
+}
+function ordenarCumples(lista, hoy){
+  return lista.filter(function(c){ return c.cumple; }).map(function(c){ return {c:c, dias:diasParaCumple(c.cumple, hoy)}; })
+    .filter(function(x){ return x.dias!==null; }).sort(function(a,b){ return a.dias-b.dias; });
+}
+
+/* ---------- acciones ---------- */
+function registrarVisita(id){
+  var c = st.clientes.find(function(x){ return x.id===id; }); if(!c) return;
+  c.visitas++; c.visitasTotal++; c.ultima = hoyStr();
+  var gano = false;
+  if(c.visitas >= st.cfg.meta){ c.visitas = 0; c.recompensas++; gano = true; }
+  guardar(); pintarTodo();
+  toast(gano ? ("🎁 ¡" + c.nombre.split(" ")[0] + " ganó su recompensa!") : ("Visita registrada: " + c.nombre.split(" ")[0] + " lleva " + c.visitas + " de " + st.cfg.meta));
+}
+function canjear(id){
+  var c = st.clientes.find(function(x){ return x.id===id; }); if(!c || c.recompensas<1) return;
+  if(!confirm("¿Canjear la recompensa de " + c.nombre + " (" + recompensaTxt() + ")?")) return;
+  c.recompensas--; guardar(); pintarTodo(); toast("Recompensa canjeada ✓");
+}
+function wa(url){ window.open(url, "_blank"); }
+function enviarProgreso(id){
+  var c = st.clientes.find(function(x){ return x.id===id; }); if(!c) return;
+  var f = fonoWa(c.telefono); if(!f){ toast("Este cliente no tiene teléfono válido"); return; }
+  wa("https://wa.me/" + f + "?text=" + encodeURIComponent(msgProgreso(c)));
+}
+function enviarCumple(id){
+  var c = st.clientes.find(function(x){ return x.id===id; }); if(!c) return;
+  var f = fonoWa(c.telefono); if(!f){ toast("Este cliente no tiene teléfono válido"); return; }
+  wa("https://wa.me/" + f + "?text=" + encodeURIComponent(msgCumple(c)));
+}
+function cargarEdicion(id){
+  var c = st.clientes.find(function(x){ return x.id===id; }); if(!c) return;
+  document.getElementById("e-id").value = c.id;
+  document.getElementById("e-nombre").value = c.nombre;
+  document.getElementById("e-fono").value = c.telefono;
+  document.getElementById("e-cumple").value = c.cumple || "";
+  irA("registrar"); toast("Editando a " + c.nombre.split(" ")[0]);
+}
+
+/* ---------- pintura ---------- */
+function aplicarColor(){
+  document.documentElement.style.setProperty("--p", st.cfg.color);
+  document.documentElement.style.setProperty("--ok", st.cfg.color);
+  var meta = document.querySelector('meta[name="theme-color"]'); if(meta) meta.setAttribute("content", st.cfg.color);
+  document.querySelectorAll("#colores button").forEach(function(b){ b.classList.toggle("sel", b.dataset.c===st.cfg.color); });
+}
+function tarjetaCliente(c, hoy){
+  var f = faltaPara(c), pct = Math.min(100, Math.round(100*c.visitas/st.cfg.meta));
+  var d = c.cumple ? diasParaCumple(c.cumple, hoy) : null;
+  var h = '<div class="cliente"><div class="nom">' + esc(c.nombre) + '</div>';
+  h += '<div class="det">' + (c.telefono ? esc(c.telefono) : "Sin teléfono") + (c.ultima ? " · Última visita: " + esc(c.ultima) : " · Aún sin visitas") + '</div>';
+  if(d!==null && d<=30) h += ' <span class="chip cumple">🎂 ' + (d===0 ? "¡Cumple HOY!" : "Cumple en " + d + (d===1?" día":" días")) + '</span>';
+  if(c.recompensas>0) h += ' <span class="chip lista">🎁 ' + c.recompensas + ' recompensa lista</span>';
+  h += '<div class="barra"><i style="width:' + pct + '%"></i></div>';
+  h += '<div class="det">' + c.visitas + " de " + st.cfg.meta + " visitas" + (c.recompensas>0 ? "" : (f===0 ? "" : " · le faltan " + f)) + " · total histórico: " + c.visitasTotal + '</div>';
+  h += '<div class="fila"><button class="btn chico" onclick="registrarVisita(\'' + c.id + '\')">+ Visita</button>';
+  if(c.recompensas>0) h += '<button class="btn chico sec" onclick="canjear(\'' + c.id + '\')">Canjear 🎁</button>';
+  h += '<button class="btn chico wa" onclick="enviarProgreso(\'' + c.id + '\')">WhatsApp</button>';
+  h += '<button class="btn chico sec" onclick="cargarEdicion(\'' + c.id + '\')">Editar</button></div></div>';
+  return h;
+}
+function pintarTodo(){
+  var hoy = new Date();
+  document.getElementById("h-nombre").textContent = st.cfg.nombre;
+  var visitasHoy = 0;
+  st.clientes.forEach(function(c){ if(c.ultima===hoyStr()) visitasHoy++; });
+  var listas = st.clientes.reduce(function(a,c){ return a + (c.recompensas>0?1:0); }, 0);
+  var cumples = ordenarCumples(st.clientes, hoy);
+  document.getElementById("s-clientes").textContent = st.clientes.length;
+  document.getElementById("s-visitas-hoy").textContent = visitasHoy;
+  document.getElementById("s-listas").textContent = listas;
+  document.getElementById("s-cumples").textContent = cumples.filter(function(x){ return x.dias<=7; }).length;
+  document.getElementById("como-funciona").textContent = "Cada vez que un cliente registrado compra, tocas «+ Visita» en su tarjeta. Al juntar " + st.cfg.meta + " visitas gana " + recompensaTxt() + ". Con el botón WhatsApp le llega su progreso («llevas X, te faltan Y»). En su cumpleaños tiene un " + st.cfg.cumplePct + "% de descuento y la app te avisa para felicitarlo.";
+  var cerca = st.clientes.filter(function(c){ return c.recompensas>0 || (c.visitas>0 && faltaPara(c)<=2); })
+    .sort(function(a,b){ return (b.recompensas-a.recompensas) || (faltaPara(a)-faltaPara(b)); }).slice(0,6);
+  document.getElementById("cerca").innerHTML = cerca.length ? cerca.map(function(c){ return tarjetaCliente(c, hoy); }).join("") : '<p class="vacio">Todavía nadie está cerca. Registra clientes y suma sus visitas.</p>';
+  var c7 = cumples.filter(function(x){ return x.dias<=7; });
+  document.getElementById("cumples-inicio").innerHTML = c7.length ? c7.map(function(x){ return tarjetaCliente(x.c, hoy); }).join("") : '<p class="vacio">Sin cumpleaños en los próximos 7 días.</p>';
+  var q = (document.getElementById("buscar").value || "").toLowerCase();
+  var lista = st.clientes.filter(function(c){ return !q || c.nombre.toLowerCase().indexOf(q)>=0 || String(c.telefono).indexOf(q)>=0; })
+    .slice().sort(function(a,b){ return a.nombre.localeCompare(b.nombre); });
+  document.getElementById("lista-clientes").innerHTML = lista.length ? lista.map(function(c){ return tarjetaCliente(c, hoy); }).join("") : '<p class="vacio">No hay clientes' + (q ? " con ese criterio" : " todavía. Registra el primero en la pestaña Registrar") + '.</p>';
+  var c30 = cumples.filter(function(x){ return x.dias<=30; });
+  document.getElementById("cumples-lista").innerHTML = c30.length ? c30.map(function(x){
+      var c = x.c;
+      var h = '<div class="cliente"><div class="nom">' + esc(c.nombre) + ' <span class="chip cumple">' + (x.dias===0 ? "¡HOY! 🎉" : "en " + x.dias + (x.dias===1?" día":" días")) + '</span></div>';
+      h += '<div class="det">Cumpleaños: ' + esc(c.cumple ? c.cumple.slice(5) : "") + ' · Descuento de cumpleaños: ' + st.cfg.cumplePct + '%</div>';
+      h += '<div class="fila"><button class="btn chico wa" onclick="enviarCumple(\'' + c.id + '\')">🎂 Felicitar por WhatsApp</button></div></div>';
+      return h;
+    }).join("") : '<p class="vacio">Sin cumpleaños en los próximos 30 días.</p>';
+}
+function irA(v){
+  document.querySelectorAll(".vista").forEach(function(s){ s.classList.toggle("activa", s.id==="v-"+v); });
+  document.querySelectorAll("nav button").forEach(function(b){ b.classList.toggle("on", b.dataset.v===v); });
+  window.scrollTo(0,0);
+}
+
+/* ---------- eventos ---------- */
+document.querySelectorAll("nav button").forEach(function(b){ b.addEventListener("click", function(){ irA(b.dataset.v); }); });
+document.getElementById("buscar").addEventListener("input", pintarTodo);
+document.getElementById("btn-nuevo").addEventListener("click", function(){
+  var nombre = document.getElementById("n-nombre").value.trim();
+  var fono = document.getElementById("n-fono").value.trim();
+  var cumple = document.getElementById("n-cumple").value;
+  if(!nombre){ toast("Falta el nombre"); return; }
+  if(!fono){ toast("Falta el teléfono (lo necesitamos para avisarle)"); return; }
+  st.clientes.push({id:uid(), nombre:nombre, telefono:fono, cumple:cumple||"", visitas:0, visitasTotal:0, recompensas:0, ultima:"", creado:hoyStr()});
+  guardar();
+  document.getElementById("n-nombre").value = ""; document.getElementById("n-fono").value = ""; document.getElementById("n-cumple").value = "";
+  pintarTodo(); toast("Cliente registrado ✓"); irA("clientes");
+});
+document.getElementById("btn-editar").addEventListener("click", function(){
+  var id = document.getElementById("e-id").value; if(!id){ toast("Primero toca «Editar» en un cliente"); return; }
+  var c = st.clientes.find(function(x){ return x.id===id; }); if(!c) return;
+  c.nombre = document.getElementById("e-nombre").value.trim() || c.nombre;
+  c.telefono = document.getElementById("e-fono").value.trim();
+  c.cumple = document.getElementById("e-cumple").value || "";
+  guardar(); pintarTodo(); toast("Cambios guardados ✓"); irA("clientes");
+});
+document.getElementById("btn-borrar").addEventListener("click", function(){
+  var id = document.getElementById("e-id").value; if(!id){ toast("Primero toca «Editar» en un cliente"); return; }
+  var c = st.clientes.find(function(x){ return x.id===id; }); if(!c) return;
+  if(!confirm("¿Borrar a " + c.nombre + "? Se pierde su historial de visitas.")) return;
+  st.clientes = st.clientes.filter(function(x){ return x.id!==id; });
+  document.getElementById("e-id").value = ""; guardar(); pintarTodo(); toast("Cliente borrado"); irA("clientes");
+});
+document.getElementById("btn-reglas").addEventListener("click", function(){
+  st.cfg.meta = Math.max(1, parseInt(document.getElementById("a-meta").value,10) || 10);
+  st.cfg.tipo = document.getElementById("a-tipo").value;
+  st.cfg.pct = Math.max(1, parseInt(document.getElementById("a-pct").value,10) || 10);
+  st.cfg.prod = document.getElementById("a-prod").value.trim();
+  st.cfg.cumplePct = Math.max(0, parseInt(document.getElementById("a-cumple-pct").value,10) || 0);
+  guardar(); pintarTodo(); toast("Reglas guardadas ✓");
+});
+document.getElementById("btn-nombre").addEventListener("click", function(){
+  st.cfg.nombre = document.getElementById("a-nombre").value.trim() || st.cfg.nombre; guardar(); pintarTodo(); toast("Nombre guardado ✓");
+});
+var PALETA = ["#2e7d32","#1565c0","#c62828","#ef6c00","#6a1b9a","#00695c","#4e342e","#37474f"];
+var contCol = document.getElementById("colores");
+PALETA.forEach(function(col){
+  var b = document.createElement("button"); b.style.background = col; b.dataset.c = col; b.title = col;
+  b.addEventListener("click", function(){ st.cfg.color = col; guardar(); aplicarColor(); pintarTodo(); });
+  contCol.appendChild(b);
+});
+document.getElementById("btn-color").addEventListener("click", function(){
+  st.cfg.color = document.getElementById("a-color").value; guardar(); aplicarColor(); pintarTodo(); toast("Color aplicado 🎨");
+});
+document.getElementById("btn-exportar").addEventListener("click", function(){
+  var blob = new Blob([JSON.stringify(st, null, 2)], {type:"application/json"});
+  var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "club-raulito-respaldo.json"; a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+});
+document.getElementById("imp").addEventListener("change", function(ev){
+  var f = ev.target.files[0]; if(!f) return;
+  var r = new FileReader();
+  r.onload = function(){
+    try{ var d = JSON.parse(r.result); if(!d.clientes || !d.cfg) throw 0; st = d; guardar(); sincronizarAjustes(); aplicarColor(); pintarTodo(); toast("Respaldo importado ✓"); }
+    catch(e){ toast("Ese archivo no es un respaldo válido"); }
+  };
+  r.readAsText(f);
+});
+document.getElementById("btn-demo").addEventListener("click", function(){
+  if(st.clientes.length && !confirm("Esto AGREGA clientes de ejemplo a los actuales. ¿Seguir?")) return;
+  var hoy = new Date();
+  function cumpleEn(dias, anio){ var d = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()+dias); return (anio||1990) + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); }
+  var demo = [
+    {nombre:"María González", telefono:"9 1111 1111", cumple:cumpleEn(2,1988), visitas:8, visitasTotal:18, recompensas:0},
+    {nombre:"Juan Pérez", telefono:"9 2222 2222", cumple:cumpleEn(0,1995), visitas:9, visitasTotal:9, recompensas:0},
+    {nombre:"Ana Soto", telefono:"9 3333 3333", cumple:cumpleEn(15,2001), visitas:0, visitasTotal:10, recompensas:1},
+    {nombre:"Pedro Ramírez", telefono:"9 4444 4444", cumple:cumpleEn(45,1979), visitas:3, visitasTotal:3, recompensas:0},
+    {nombre:"Lucía Fernández", telefono:"9 5555 5555", cumple:"", visitas:5, visitasTotal:15, recompensas:0}
+  ];
+  demo.forEach(function(d){ st.clientes.push({id:uid()+Math.random().toString(36).slice(2,5), nombre:d.nombre, telefono:d.telefono, cumple:d.cumple, visitas:d.visitas, visitasTotal:d.visitasTotal, recompensas:d.recompensas, ultima:hoyStr(), creado:hoyStr()}); });
+  guardar(); pintarTodo(); toast("Clientes de ejemplo cargados"); irA("inicio");
+});
+document.getElementById("btn-borrar-todo").addEventListener("click", function(){
+  if(!confirm("¿Borrar TODOS los clientes y datos de esta app en este celular?")) return;
+  st = {clientes:[], cfg:Object.assign({}, cfgDef)}; guardar(); sincronizarAjustes(); aplicarColor(); pintarTodo(); toast("Datos borrados");
+});
+function sincronizarAjustes(){
+  document.getElementById("a-meta").value = st.cfg.meta;
+  document.getElementById("a-tipo").value = st.cfg.tipo;
+  document.getElementById("a-pct").value = st.cfg.pct;
+  document.getElementById("a-prod").value = st.cfg.prod || "";
+  document.getElementById("a-cumple-pct").value = st.cfg.cumplePct;
+  document.getElementById("a-nombre").value = st.cfg.nombre;
+  document.getElementById("a-color").value = st.cfg.color;
+}
+sincronizarAjustes(); aplicarColor(); pintarTodo();
+if("serviceWorker" in navigator){ navigator.serviceWorker.register("sw.js").catch(function(){}); }
+</script>
+</body>
+</html>
