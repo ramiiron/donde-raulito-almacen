@@ -84,7 +84,7 @@ input:focus{border-color:var(--p);box-shadow:0 0 0 3px var(--p-suave)}
       <label>Tu nombre</label>
       <input id="c-nombre" type="text" placeholder="Ej: María González" autocomplete="name">
       <label>Tu teléfono (WhatsApp)</label>
-      <input id="c-fono" type="tel" placeholder="Ej: 9 1234 5678" autocomplete="tel">
+      <input id="c-fono" type="tel" placeholder="Ej: +56 9 1234 5678" autocomplete="tel">
       <label>Tu fecha de nacimiento</label>
       <input id="c-cumple" type="date">
       <button class="btn" id="btn-registrarme">Quiero ser parte del Club</button>
@@ -217,13 +217,23 @@ function accionResena(acepta){
 }
 
 /* ---------- eventos ---------- */
+function fonoCanonico(fono){
+  var d = String(fono||"").replace(/\D/g,"");
+  if(d.charAt(0)==="0") d = d.slice(1);
+  if(d.length===11 && d.indexOf("569")===0) return d;
+  if(d.length===9 && d.charAt(0)==="9") return "56" + d;
+  if(d.length===8) return "569" + d;
+  return "";
+}
 document.getElementById("btn-registrarme").addEventListener("click", function(){
   var nombre = document.getElementById("c-nombre").value.trim();
   var fono = document.getElementById("c-fono").value.trim();
   var cumple = document.getElementById("c-cumple").value;
   if(!nombre){ alert("Cuéntanos tu nombre para crear tu tarjeta."); return; }
   if(!fono){ alert("Necesitamos tu teléfono para reconocer tu tarjeta cuando vuelvas."); return; }
-  yo = {nombre:nombre, telefono:fono, cumple:cumple||"", visitas:0, visitasTotal:0, recompensas:0, ultimaVisita:"", desde:hoyStr(), resenaVista:false};
+  var fonoOk = fonoCanonico(fono);
+  if(!fonoOk){ alert("Ese número no parece un celular chileno. El formato es +56 9 1234 5678: revísalo e inténtalo de nuevo."); return; }
+  yo = {nombre:nombre, telefono:fonoOk, cumple:cumple||"", visitas:0, visitasTotal:0, recompensas:0, ultimaVisita:"", desde:hoyStr(), resenaVista:false};
   resultadoTap = contarVisita(yo, hoyStr()); // el día del registro ya cuenta como su primera visita
   guardar(); pintar();
   window.scrollTo(0,0);
