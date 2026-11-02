@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Club Donde Raulito — Tu tarjeta</title>
+<meta name="theme-color" content="#16211a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">
+<style>
+:root{--p:#1f6f43;--p-osc:#175735;--p-suave:#e9f2ec;--fondo:#f4f3f0;--card:#fff;--txt:#1b1a17;--mut:#7d7666;--borde:#e6e1d6;--oscuro:#16211a;--sombra:0 1px 2px rgba(27,26,23,.05),0 16px 40px -20px rgba(27,26,23,.3)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--fondo);color:var(--txt);font-size:15px;line-height:1.5}
+.tel{max-width:430px;margin:0 auto;padding:22px 18px 40px}
+.cab{display:flex;align-items:center;gap:11px;margin-bottom:18px}
+.marca{width:40px;height:40px;border-radius:11px;background:var(--p);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex:none}
+.cab b{display:block;font-size:15px;line-height:1.25}
+.cab span{font-size:12px;color:var(--mut)}
+h1{font-family:"Newsreader",Georgia,serif;font-size:27px;font-weight:600;line-height:1.2;letter-spacing:-.2px}
+.sub{color:var(--mut);font-size:14px;margin-top:6px}
+.card{background:var(--card);border:1px solid var(--borde);border-radius:16px;padding:20px;box-shadow:var(--sombra);margin-top:16px}
+.benef{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid #f0ece1}
+.benef:last-child{border-bottom:none}
+.benef .ic{width:38px;height:38px;border-radius:11px;background:var(--p-suave);color:var(--p);display:flex;align-items:center;justify-content:center;flex:none}
+.benef .ic svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.benef b{display:block;font-size:14.5px}
+.benef span{font-size:13px;color:var(--mut)}
+label{display:block;font-size:11px;font-weight:650;letter-spacing:.7px;color:var(--mut);text-transform:uppercase;margin:14px 0 6px}
+input{width:100%;padding:12px;border:1px solid var(--borde);border-radius:11px;font-size:16px;font-family:inherit;outline:none;background:#fff}
+input:focus{border-color:var(--p);box-shadow:0 0 0 3px var(--p-suave)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:48px;border:none;border-radius:12px;background:var(--p);color:#fff;font-size:15.5px;font-weight:650;cursor:pointer;margin-top:18px}
+.btn:active{background:var(--p-osc)}
+.btn.sec{background:#fff;color:var(--p);border:1.5px solid var(--p);height:44px;font-size:14.5px}
+.btn.suave{background:var(--p-suave);color:var(--p-osc);height:44px;font-size:14.5px}
+.tarjeta{background:linear-gradient(135deg,var(--oscuro),#22392b);color:#eef2ee;border-radius:18px;padding:22px;box-shadow:var(--sombra);margin-top:16px;position:relative;overflow:hidden}
+.tarjeta:after{content:"";position:absolute;right:-46px;top:-46px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.06)}
+.tarjeta .sup{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1}
+.tarjeta .sup span{font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;opacity:.75}
+.tarjeta .nom{font-family:"Newsreader",Georgia,serif;font-size:23px;font-weight:600;margin-top:16px;position:relative;z-index:1}
+.tarjeta .det{font-size:12.5px;opacity:.75;position:relative;z-index:1}
+.puntos{display:flex;gap:6px;margin-top:16px;position:relative;z-index:1}
+.puntos i{width:13px;height:13px;border-radius:50%;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35)}
+.puntos i.lleno{background:#7fc79b;border-color:#7fc79b}
+.estado{margin-top:16px;text-align:center}
+.estado .grande{font-family:"Newsreader",Georgia,serif;font-size:24px;font-weight:600;line-height:1.25}
+.estado p{color:var(--mut);font-size:14px;margin-top:5px}
+.aviso{border-radius:13px;padding:14px 16px;margin-top:14px;font-size:14px;display:flex;gap:11px;align-items:flex-start}
+.aviso.verde{background:var(--p-suave);color:var(--p-osc)}
+.aviso.dorado{background:#fdf3e0;color:#7c5410}
+.aviso b{font-weight:700}
+.aviso svg{width:19px;height:19px;flex:none;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;margin-top:1px}
+.demo{margin-top:26px;border:1.5px dashed var(--borde);border-radius:14px;padding:14px 16px;background:transparent}
+.demo p{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--mut);margin-bottom:4px}
+.demo span{font-size:12.5px;color:var(--mut);display:block;margin-bottom:10px}
+.demo .fila{display:flex;gap:8px;flex-wrap:wrap}
+.demo button{flex:1;background:#fff;border:1.5px solid var(--borde);border-radius:10px;padding:9px 8px;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--txt)}
+.pie{text-align:center;color:var(--mut);font-size:12px;margin-top:22px;line-height:1.6}
+.oculto{display:none}
+@keyframes entra{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.entra{animation:entra .3s ease}
+@keyframes pop{0%{transform:scale(.6)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+.pop{animation:pop .45s ease}
+</style>
+</head>
+<body>
+<div class="tel">
+  <div class="cab">
+    <div class="marca">DR</div>
+    <div><b>Almacén Donde Raulito</b><span>Av. El Descanso · Maipú</span></div>
+  </div>
+
+  <!-- ESTADO 1: aún no registrado -->
+  <div id="v-registro" class="oculto">
+    <h1>Bienvenido al Club</h1>
+    <p class="sub">Tus compras en el almacén ahora suman. Regístrate una sola vez y cada visita cuenta, sin tarjetas de papel.</p>
+    <div class="card" style="padding:8px 20px">
+      <div class="benef"><div class="ic"><svg viewBox="0 0 24 24"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg></div><div><b>Junta <span id="b-meta">10</span> visitas</b><span>y gana <span id="b-recompensa">un 10% de descuento</span> en tu compra.</span></div></div>
+      <div class="benef"><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 21h16"/><path d="M5 21v-4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4"/><path d="M12 15V9"/><path d="M12 6.5a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5z"/></svg></div><div><b>En tu cumpleaños</b><span>tienes un <span id="b-cumple">10</span>% de descuento, con saludo incluido.</span></div></div>
+      <div class="benef"><div class="ic"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div><div><b>Sin hacer nada más</b><span>cada vez que apoyes tu teléfono aquí, tu visita se anota sola.</span></div></div>
+    </div>
+    <div class="card">
+      <label>Tu nombre</label>
+      <input id="c-nombre" type="text" placeholder="Ej: María González" autocomplete="name">
+      <label>Tu teléfono (WhatsApp)</label>
+      <input id="c-fono" type="tel" placeholder="Ej: 9 1234 5678" autocomplete="tel">
+      <label>Tu fecha de nacimiento</label>
+      <input id="c-cumple" type="date">
+      <button class="btn" id="btn-registrarme">Quiero ser parte del Club</button>
+      <p class="sub" style="font-size:12.5px;text-align:center;margin-top:12px">Solo guardamos tu nombre, teléfono y cumpleaños para llevar tu cuenta de visitas.</p>
+    </div>
+  </div>
+
+  <!-- ESTADO 2: registrado -->
+  <div id="v-socio" class="oculto">
+    <div id="zona-aviso"></div>
+    <div class="tarjeta entra">
+      <div class="sup"><span>Club Donde Raulito</span><span>Socio</span></div>
+      <div class="nom" id="t-nombre">—</div>
+      <div class="det" id="t-det">—</div>
+      <div class="puntos" id="t-puntos"></div>
+    </div>
+    <div class="estado entra">
+      <div class="grande" id="e-titulo">—</div>
+      <p id="e-texto">—</p>
+    </div>
+    <div id="zona-extra"></div>
+    <button class="btn suave" id="btn-mostrar">Mostrar mi tarjeta en caja</button>
+  </div>
+
+  <!-- DEMO -->
+  <div class="demo">
+    <p>Modo demostración</p>
+    <span>Esto lo ve solo quien está probando la app. Sirve para mostrarle a Raúl cómo avanza un cliente sin esperar días reales.</span>
+    <div class="fila">
+      <button id="btn-simular">Simular la visita de mañana</button>
+      <button id="btn-reiniciar">Reiniciar demo</button>
+    </div>
+  </div>
+
+  <p class="pie">Almacén Donde Raulito · Av. El Descanso, Maipú<br>Club de Clientes</p>
+</div>
+
+<script>
+"use strict";
+var CLAVE = "raulito-cliente-v1";
+var CLUB = {nombre:"Almacén Donde Raulito", meta:10, recompensa:"un 10% de descuento en tu próxima compra", cumplePct:10};
+var yo = cargar();
+
+function cargar(){ try{ var d = JSON.parse(localStorage.getItem(CLAVE)); if(d && d.nombre) return d; }catch(e){} return null; }
+function guardar(){ if(yo) localStorage.setItem(CLAVE, JSON.stringify(yo)); }
+function hoyStr(){ var d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+
+/* ---------- lógica del tap (probada aparte) ---------- */
+function diasParaCumple(cumple, hoy){
+  if(!cumple) return null;
+  var p = cumple.split("-"); if(p.length<2) return null;
+  var mes = parseInt(p[p.length-2],10), dia = parseInt(p[p.length-1],10);
+  var h = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+  var prox = new Date(hoy.getFullYear(), mes-1, dia);
+  if(prox < h) prox = new Date(hoy.getFullYear()+1, mes-1, dia);
+  return Math.round((prox - h)/86400000);
+}
+function contarVisita(socio, fecha){
+  // Máximo 1 visita contada por día. Devuelve {contada, gano, visitas}
+  if(socio.ultimaVisita === fecha) return {contada:false, gano:false, visitas:socio.visitas};
+  socio.ultimaVisita = fecha;
+  socio.visitas++; socio.visitasTotal++;
+  var gano = false;
+  if(socio.visitas >= CLUB.meta){ socio.visitas = 0; socio.recompensas++; gano = true; }
+  return {contada:true, gano:gano, visitas:socio.visitas};
+}
+
+/* ---------- flujo al abrir (el "tap") ---------- */
+var resultadoTap = null;
+if(yo){
+  resultadoTap = contarVisita(yo, hoyStr());
+  guardar();
+}
+
+/* ---------- pintura ---------- */
+function pintar(){
+  document.getElementById("v-registro").classList.toggle("oculto", !!yo);
+  document.getElementById("v-socio").classList.toggle("oculto", !yo);
+  if(!yo){
+    document.getElementById("b-meta").textContent = CLUB.meta;
+    document.getElementById("b-recompensa").textContent = CLUB.recompensa;
+    document.getElementById("b-cumple").textContent = CLUB.cumplePct;
+    return;
+  }
+  var hoy = new Date();
+  document.getElementById("t-nombre").textContent = yo.nombre;
+  document.getElementById("t-det").textContent = "Socio desde " + (yo.desde || "hoy") + " · " + yo.visitasTotal + (yo.visitasTotal===1 ? " visita en total" : " visitas en total");
+  var pts = "";
+  for(var i=0;i<CLUB.meta;i++) pts += '<i class="' + (i<yo.visitas ? "lleno" : "") + '"></i>';
+  document.getElementById("t-puntos").innerHTML = pts;
+
+  var aviso = "", titulo = "", texto = "";
+  var falta = CLUB.meta - yo.visitas;
+  if(yo.recompensas>0){
+    titulo = "Tienes una recompensa lista";
+    texto = "En tu próxima compra pide canjear: " + CLUB.recompensa + ". Muestra esta pantalla en caja.";
+    aviso = '<div class="aviso dorado entra"><svg viewBox="0 0 24 24"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><div><b>Recompensa disponible.</b> ' + esc(CLUB.recompensa.charAt(0).toUpperCase() + CLUB.recompensa.slice(1)) + " te espera en caja.</div></div>";
+  } else if(resultadoTap && resultadoTap.gano){
+    titulo = "¡Completaste tu tarjeta!";
+    texto = "Con la visita de hoy juntaste las " + CLUB.meta + " visitas. Tu recompensa quedó guardada en tu tarjeta.";
+  } else if(resultadoTap && resultadoTap.contada){
+    titulo = "Visita registrada";
+    texto = "Ya llevas " + yo.visitas + " de " + CLUB.meta + " visitas. " + (falta===1 ? "Te falta solo 1 visita para tu recompensa." : "Te faltan " + falta + " visitas para tu recompensa.");
+    aviso = '<div class="aviso verde entra"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><div><b>Listo, tu visita de hoy quedó anotada.</b> Gracias por comprar en el barrio.</div></div>';
+  } else {
+    titulo = "Ya nos vimos hoy";
+    texto = "Tu visita de hoy ya está registrada. Llevas " + yo.visitas + " de " + CLUB.meta + " visitas" + (falta>0 ? ": te faltan " + falta + " para tu recompensa." : ".");
+  }
+  var d = yo.cumple ? diasParaCumple(yo.cumple, hoy) : null;
+  if(d===0){
+    aviso = '<div class="aviso dorado entra"><svg viewBox="0 0 24 24"><path d="M4 21h16"/><path d="M5 21v-4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4"/><path d="M12 15V9"/><path d="M12 6.5a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5z"/></svg><div><b>¡Feliz cumpleaños!</b> Hoy tienes un ' + CLUB.cumplePct + '% de descuento en tu compra. Pídelo en caja mostrando esta pantalla.</div></div>' + aviso;
+  } else if(d!==null && d<=7){
+    aviso += '<div class="aviso verde entra"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><div>Tu cumpleaños viene en ' + d + (d===1 ? " día" : " días") + ": ese día tienes un " + CLUB.cumplePct + '% de descuento.</div></div>';
+  }
+  document.getElementById("zona-aviso").innerHTML = aviso;
+  document.getElementById("e-titulo").textContent = titulo;
+  document.getElementById("e-texto").textContent = texto;
+
+  var extra = "";
+  if(yo.visitasTotal>=3 && !yo.resenaVista){
+    extra = '<div class="card entra" style="text-align:center"><p style="font-weight:650;font-size:15px">¿Te gusta comprar aquí?</p><p class="sub" style="font-size:13.5px">Una reseña en Google ayuda a que más vecinos conozcan el almacén.</p><button class="btn" style="height:44px;font-size:14.5px" onclick="accionResena(true)">Dejar una reseña</button><button class="btn sec" style="margin-top:9px" onclick="accionResena(false)">Ahora no</button></div>';
+  }
+  document.getElementById("zona-extra").innerHTML = extra;
+}
+function accionResena(acepta){
+  if(yo){ yo.resenaVista = true; guardar(); }
+  if(acepta) alert("Aquí se abriría el link de reseñas de Google del almacén (Raúl lo pega en los ajustes cuando lo tenga).");
+  pintar();
+}
+
+/* ---------- eventos ---------- */
+document.getElementById("btn-registrarme").addEventListener("click", function(){
+  var nombre = document.getElementById("c-nombre").value.trim();
+  var fono = document.getElementById("c-fono").value.trim();
+  var cumple = document.getElementById("c-cumple").value;
+  if(!nombre){ alert("Cuéntanos tu nombre para crear tu tarjeta."); return; }
+  if(!fono){ alert("Necesitamos tu teléfono para reconocer tu tarjeta cuando vuelvas."); return; }
+  yo = {nombre:nombre, telefono:fono, cumple:cumple||"", visitas:0, visitasTotal:0, recompensas:0, ultimaVisita:"", desde:hoyStr(), resenaVista:false};
+  resultadoTap = contarVisita(yo, hoyStr()); // el día del registro ya cuenta como su primera visita
+  guardar(); pintar();
+  window.scrollTo(0,0);
+});
+document.getElementById("btn-mostrar").addEventListener("click", function(){
+  alert("Muestra esta pantalla en caja: el vendedor verá tu nombre y tus visitas, y podrá canjear tu recompensa si tienes una.");
+});
+document.getElementById("btn-simular").addEventListener("click", function(){
+  if(!yo){ alert("Primero regístrate en la demo para simular visitas."); return; }
+  var d = new Date(); d.setDate(d.getDate()+1);
+  var manana = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  // adelanta la marca interna un día para permitir otra visita "mañana"
+  yo.ultimaVisita = "";
+  resultadoTap = contarVisita(yo, manana);
+  yo.ultimaVisita = hoyStr(); // vuelve a hoy para que un tap real hoy no duplique
+  guardar(); pintar(); window.scrollTo(0,0);
+});
+document.getElementById("btn-reiniciar").addEventListener("click", function(){
+  if(!confirm("¿Reiniciar la demo? Se borra el socio de este navegador.")) return;
+  localStorage.removeItem(CLAVE); yo = null; resultadoTap = null; pintar(); window.scrollTo(0,0);
+});
+pintar();
+</script>
+</body>
+</html>
