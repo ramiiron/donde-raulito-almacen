@@ -122,6 +122,9 @@ input:focus{border-color:var(--p);box-shadow:0 0 0 3px var(--p-suave)}
   <p class="pie">Almacén Donde Raulito · Av. El Descanso, Maipú<br>Club de Clientes</p>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 "use strict";
 var CLAVE = "raulito-cliente-v1";
@@ -256,6 +259,90 @@ document.getElementById("btn-reiniciar").addEventListener("click", function(){
   localStorage.removeItem(CLAVE); yo = null; resultadoTap = null; pintar(); window.scrollTo(0,0);
 });
 pintar();
+</script>
+
+<script>
+/* ===== Nube compartida (Firebase, mismo proyecto que la app de huevos) =====
+   La tarjeta del cliente y el panel de Raúl leen/escriben el mismo registro:
+   coleccion raulito_club_clientes (doc = telefono) y raulito_club_config/app. */
+var FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBa4XTJo47f3ZutCwIabO89SNTopQqTljc",
+  authDomain: "finanzas-bugueno.firebaseapp.com",
+  projectId: "finanzas-bugueno",
+  storageBucket: "finanzas-bugueno.firebasestorage.app",
+  messagingSenderId: "745240953305",
+  appId: "1:745240953305:web:37595a80c087fef80799c8"
+};
+var nubeDbC = null, nubeOnC = false, nubeAplicandoC = false, nubeTimerC = null, nubeSubC = "";
+function recompensaDeCfg(cfg){
+  if(cfg.tipo === "producto") return cfg.prod ? cfg.prod : "un producto gratis";
+  return "un " + (cfg.pct || 10) + "% de descuento en tu próxima compra";
+}
+function aplicarCfgNube(cfg){
+  if(!cfg) return;
+  if(cfg.nombre) CLUB.nombre = cfg.nombre;
+  if(cfg.meta) CLUB.meta = cfg.meta;
+  if(cfg.cumplePct !== undefined) CLUB.cumplePct = cfg.cumplePct;
+  CLUB.recompensa = recompensaDeCfg(Object.assign({tipo:"descuento", pct:10, prod:""}, cfg));
+  var bm = document.getElementById("b-monto");
+  if(bm && cfg.montoBonus !== undefined) bm.textContent = "$" + Number(cfg.montoBonus || 0).toLocaleString("es-CL");
+}
+function docDesdeYo(){
+  return {nombre: yo.nombre, telefono: yo.telefono, cumple: yo.cumple || "", visitas: yo.visitas, visitasTotal: yo.visitasTotal, recompensas: yo.recompensas, creado: yo.desde || hoyStr(), ultima: yo.ultimaVisita || ""};
+}
+function adoptarDocC(d){
+  nubeAplicandoC = true;
+  yo.nombre = d.nombre || yo.nombre;
+  yo.cumple = d.cumple || "";
+  yo.visitas = d.visitas || 0; yo.visitasTotal = d.visitasTotal || 0; yo.recompensas = d.recompensas || 0;
+  yo.ultimaVisita = d.ultima || yo.ultimaVisita;
+  if(d.creado) yo.desde = d.creado;
+  guardar();
+  nubeAplicandoC = false;
+  pintar();
+}
+function decidirReconcilio(docD, yoL, hoy){
+  if(!docD) return "crear";
+  if(docD.ultima === hoy) return "adoptar";
+  if(yoL.ultimaVisita === hoy && (yoL.visitasTotal || 0) > (docD.visitasTotal || 0)) return "empujar";
+  if((docD.visitasTotal || 0) > (yoL.visitasTotal || 0)) return "adoptar";
+  return "empujar";
+}
+function nubeSuscribirC(fono){
+  if(nubeSubC === fono || !nubeDbC) return;
+  nubeSubC = fono;
+  nubeDbC.collection("raulito_club_clientes").doc(fono).onSnapshot(function(doc){
+    if(!doc.exists || nubeAplicandoC) return;
+    var d = doc.data();
+    if((d.visitasTotal || 0) !== (yo.visitasTotal || 0) || (d.recompensas || 0) !== (yo.recompensas || 0) || (d.ultima || "") !== (yo.ultimaVisita || "") || (d.nombre || "") !== (yo.nombre || "")) adoptarDocC(d);
+  }, function(){});
+}
+function nubeSincronizarYo(){
+  if(!nubeOnC || !nubeDbC || !yo || !yo.telefono || nubeAplicandoC) return;
+  nubeSuscribirC(yo.telefono);
+  var ref = nubeDbC.collection("raulito_club_clientes").doc(yo.telefono);
+  ref.get().then(function(snap){
+    var decision = decidirReconcilio(snap.exists ? snap.data() : null, yo, hoyStr());
+    if(decision === "adoptar") adoptarDocC(snap.data());
+    else ref.set(docDesdeYo(), {merge: true}).catch(function(){});
+  }).catch(function(){});
+}
+var _guardarC = guardar;
+guardar = function(){ _guardarC(); if(nubeTimerC) clearTimeout(nubeTimerC); nubeTimerC = setTimeout(nubeSincronizarYo, 900); };
+function nubeInitC(){
+  if(typeof firebase === "undefined") return;
+  try{
+    if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    firebase.auth().signInAnonymously().then(function(){
+      nubeDbC = firebase.firestore(); nubeOnC = true;
+      nubeDbC.collection("raulito_club_config").doc("app").onSnapshot(function(doc){
+        if(doc.exists){ aplicarCfgNube(doc.data()); pintar(); }
+      }, function(){});
+      if(yo && yo.telefono) nubeSincronizarYo();
+    }).catch(function(){});
+  }catch(e){}
+}
+nubeInitC();
 </script>
 </body>
 </html>
