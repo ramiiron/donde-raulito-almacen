@@ -378,6 +378,9 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
 </nav></div>
 <div id="toast"></div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 "use strict";
 var CLAVE = "raulito-club-v1";
@@ -799,11 +802,11 @@ document.getElementById("btn-demo").addEventListener("click", function(){
     {nombre:"Pedro Ramírez", telefono:"9 4444 4444", cumple:cumpleEn(45,1979), visitas:3, visitasTotal:3, recompensas:0},
     {nombre:"Lucía Fernández", telefono:"9 5555 5555", cumple:"", visitas:5, visitasTotal:15, recompensas:0}
   ];
-  demo.forEach(function(d){ st.clientes.push({id:uid()+Math.random().toString(36).slice(2,5), nombre:d.nombre, telefono:d.telefono, cumple:d.cumple, visitas:d.visitas, visitasTotal:d.visitasTotal, recompensas:d.recompensas, ultima:hoyStr(), creado:hoyStr()}); });
+  demo.forEach(function(d){ st.clientes.push({id:uid()+Math.random().toString(36).slice(2,5), demo:true, nombre:d.nombre, telefono:d.telefono, cumple:d.cumple, visitas:d.visitas, visitasTotal:d.visitasTotal, recompensas:d.recompensas, ultima:hoyStr(), creado:hoyStr()}); });
   guardar(); pintarTodo(); toast("Clientes de ejemplo cargados"); irA("inicio");
 });
 document.getElementById("btn-borrar-todo").addEventListener("click", function(){
-  if(!confirm("¿Borrar TODOS los clientes y datos de esta app en este equipo?")) return;
+  if(!confirm("¿Borrar TODOS los clientes y datos del Club? Se borran también de la nube compartida (de todos los celulares).")) return;
   st = {clientes:[], cfg:Object.assign({}, cfgDef)}; guardar(); sincronizarAjustes(); aplicarColor(); pintarTodo(); toast("Datos borrados");
 });
 function sincronizarAjustes(){
@@ -818,6 +821,107 @@ function sincronizarAjustes(){
 }
 sincronizarAjustes(); aplicarColor(); pintarTodo();
 if("serviceWorker" in navigator){ navigator.serviceWorker.register("sw.js").catch(function(){}); }
+</script>
+
+<script>
+/* ===== Nube compartida (Firebase, mismo proyecto que la app de huevos) =====
+   Coleccion raulito_club_clientes (doc = telefono canonico) + raulito_club_config/app.
+   El panel y las tarjetas de los clientes comparten los mismos datos en vivo.
+   Los clientes de ejemplo (demo:true) nunca suben a la nube. */
+var FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBa4XTJo47f3ZutCwIabO89SNTopQqTljc",
+  authDomain: "finanzas-bugueno.firebaseapp.com",
+  projectId: "finanzas-bugueno",
+  storageBucket: "finanzas-bugueno.firebasestorage.app",
+  messagingSenderId: "745240953305",
+  appId: "1:745240953305:web:37595a80c087fef80799c8"
+};
+var nubeDbP = null, nubeOnP = false, nubeSyncP = {}, nubeCfgJsonP = "", nubeTimerP = null, nubeAplicandoP = false;
+var nubeLocalesPrevios = null, nubeMigracionHecha = false;
+function canonObj(o){ var r = {}; Object.keys(o).sort().forEach(function(k){ r[k] = o[k]; }); return JSON.stringify(r); }
+function docDeCliente(c){
+  return {nombre:c.nombre, telefono:c.telefono, cumple:c.cumple || "", visitas:c.visitas || 0, visitasTotal:c.visitasTotal || 0,
+          recompensas:c.recompensas || 0, creado:c.creado || "", ultima:c.ultima || "", bonus:c.bonus || 0, ultimoBonus:c.ultimoBonus || ""};
+}
+function clienteDeDoc(id, d){
+  return {id:id, nombre:d.nombre || "", telefono:id, cumple:d.cumple || "", visitas:d.visitas || 0, visitasTotal:d.visitasTotal || 0,
+          recompensas:d.recompensas || 0, creado:d.creado || "", ultima:d.ultima || "", bonus:d.bonus || 0, ultimoBonus:d.ultimoBonus || ""};
+}
+function guardarLocalP(){ try{ localStorage.setItem(CLAVE, JSON.stringify(st)); }catch(e){} }
+function pintarEstadoNubeP(){
+  var b = document.getElementById("btn-exportar"); if(!b) return;
+  var el = document.getElementById("nube-estado");
+  if(!el){ el = document.createElement("p"); el.id = "nube-estado"; el.className = "mini"; el.style.marginBottom = "10px"; b.parentNode.insertBefore(el, b); }
+  el.textContent = nubeOnP
+    ? "Nube compartida ACTIVADA: un cliente que se registra con la placa aparece aquí solo, y visitas, canjes y reglas se ven en todos los celulares."
+    : "Nube: sin conexión por ahora. Los datos quedan en este equipo y se comparten apenas vuelva la conexión.";
+}
+function sincronizarNubeP(){
+  if(!nubeOnP || !nubeDbP || nubeAplicandoP) return;
+  var deseado = {};
+  st.clientes.forEach(function(c){ if(!c.demo && c.telefono) deseado[c.telefono] = docDeCliente(c); });
+  var batch = nubeDbP.batch(); var cambios = 0;
+  Object.keys(deseado).forEach(function(f){
+    var cn = canonObj(deseado[f]);
+    if(nubeSyncP[f] !== cn){ batch.set(nubeDbP.collection("raulito_club_clientes").doc(f), deseado[f]); nubeSyncP[f] = cn; cambios++; }
+  });
+  Object.keys(nubeSyncP).forEach(function(f){
+    if(!(f in deseado)){ batch.delete(nubeDbP.collection("raulito_club_clientes").doc(f)); delete nubeSyncP[f]; cambios++; }
+  });
+  var cfgCn = canonObj(st.cfg);
+  if(nubeCfgJsonP !== "" && cfgCn !== nubeCfgJsonP){
+    batch.set(nubeDbP.collection("raulito_club_config").doc("app"), JSON.parse(cfgCn));
+    nubeCfgJsonP = cfgCn; cambios++;
+  }
+  if(cambios) batch.commit().catch(function(){});
+}
+var _guardarP = guardar;
+guardar = function(){ _guardarP(); if(nubeTimerP) clearTimeout(nubeTimerP); nubeTimerP = setTimeout(sincronizarNubeP, 1200); };
+function nubeInitP(){
+  if(typeof firebase === "undefined"){ pintarEstadoNubeP(); return; }
+  try{
+    if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    firebase.auth().signInAnonymously().then(function(){
+      nubeDbP = firebase.firestore(); nubeOnP = true; pintarEstadoNubeP();
+      nubeLocalesPrevios = st.clientes.filter(function(c){ return !c.demo && c.telefono; });
+      nubeDbP.collection("raulito_club_config").doc("app").onSnapshot(function(doc){
+        if(!doc.exists){
+          nubeCfgJsonP = canonObj(st.cfg);
+          nubeDbP.collection("raulito_club_config").doc("app").set(JSON.parse(nubeCfgJsonP)).catch(function(){});
+          return;
+        }
+        var fusion = Object.assign({}, cfgDef, doc.data());
+        var cn = canonObj(fusion);
+        if(cn !== nubeCfgJsonP){
+          nubeCfgJsonP = cn; nubeAplicandoP = true;
+          st.cfg = fusion; guardarLocalP(); sincronizarAjustes(); aplicarColor(); pintarTodo();
+          nubeAplicandoP = false;
+        }
+      }, function(){});
+      nubeDbP.collection("raulito_club_clientes").onSnapshot(function(qs){
+        var lista = []; var sync = {};
+        qs.forEach(function(doc){ var c = clienteDeDoc(doc.id, doc.data()); lista.push(c); sync[doc.id] = canonObj(docDeCliente(c)); });
+        if(!nubeMigracionHecha && lista.length === 0 && nubeLocalesPrevios && nubeLocalesPrevios.length){
+          // Primera vez: la nube está vacía y este equipo ya tenía clientes reales -> se suben, sin perderlos de vista
+          nubeMigracionHecha = true;
+          var batch = nubeDbP.batch();
+          nubeLocalesPrevios.forEach(function(c){ batch.set(nubeDbP.collection("raulito_club_clientes").doc(c.telefono), docDeCliente(c)); });
+          batch.commit().catch(function(){});
+          return;
+        }
+        nubeMigracionHecha = true;
+        nubeSyncP = sync;
+        var demos = st.clientes.filter(function(c){ return c.demo; });
+        nubeAplicandoP = true;
+        st.clientes = lista.concat(demos);
+        guardarLocalP(); pintarTodo();
+        nubeAplicandoP = false;
+      }, function(){});
+      setTimeout(sincronizarNubeP, 1800);
+    }).catch(function(){ pintarEstadoNubeP(); });
+  }catch(e){ pintarEstadoNubeP(); }
+}
+nubeInitP();
 </script>
 </body>
 </html>
