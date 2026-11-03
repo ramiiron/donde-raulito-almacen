@@ -838,6 +838,11 @@ var FIREBASE_CONFIG = {
 };
 var nubeDbP = null, nubeOnP = false, nubeSyncP = {}, nubeCfgJsonP = "", nubeTimerP = null, nubeAplicandoP = false;
 var nubeLocalesPrevios = null, nubeMigracionHecha = false;
+function esDemoC(c){
+  if(c.demo) return true;
+  var f = fonoCanonico(c.telefono || "");
+  return f === "56911111111" || f === "56922222222" || f === "56933333333" || f === "56944444444" || f === "56955555555";
+}
 function canonObj(o){ var r = {}; Object.keys(o).sort().forEach(function(k){ r[k] = o[k]; }); return JSON.stringify(r); }
 function docDeCliente(c){
   return {nombre:c.nombre, telefono:c.telefono, cumple:c.cumple || "", visitas:c.visitas || 0, visitasTotal:c.visitasTotal || 0,
@@ -859,7 +864,7 @@ function pintarEstadoNubeP(){
 function sincronizarNubeP(){
   if(!nubeOnP || !nubeDbP || nubeAplicandoP) return;
   var deseado = {};
-  st.clientes.forEach(function(c){ if(!c.demo && c.telefono) deseado[c.telefono] = docDeCliente(c); });
+  st.clientes.forEach(function(c){ if(!esDemoC(c) && c.telefono) deseado[c.telefono] = docDeCliente(c); });
   var batch = nubeDbP.batch(); var cambios = 0;
   Object.keys(deseado).forEach(function(f){
     var cn = canonObj(deseado[f]);
@@ -883,7 +888,7 @@ function nubeInitP(){
     if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
     firebase.auth().signInAnonymously().then(function(){
       nubeDbP = firebase.firestore(); nubeOnP = true; pintarEstadoNubeP();
-      nubeLocalesPrevios = st.clientes.filter(function(c){ return !c.demo && c.telefono; });
+      nubeLocalesPrevios = st.clientes.filter(function(c){ return !esDemoC(c) && c.telefono; });
       nubeDbP.collection("raulito_club_config").doc("app").onSnapshot(function(doc){
         if(!doc.exists){
           nubeCfgJsonP = canonObj(st.cfg);
@@ -911,7 +916,7 @@ function nubeInitP(){
         }
         nubeMigracionHecha = true;
         nubeSyncP = sync;
-        var demos = st.clientes.filter(function(c){ return c.demo; });
+        var demos = st.clientes.filter(function(c){ return esDemoC(c); });
         nubeAplicandoP = true;
         st.clientes = lista.concat(demos);
         guardarLocalP(); pintarTodo();
