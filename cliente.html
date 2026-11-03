@@ -14,7 +14,7 @@
 body{font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--fondo);color:var(--txt);font-size:15px;line-height:1.5}
 .tel{max-width:430px;margin:0 auto;padding:22px 18px 40px}
 .cab{display:flex;align-items:center;gap:11px;margin-bottom:18px}
-.marca{width:40px;height:40px;border-radius:11px;background:var(--p);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex:none}
+.marca{overflow:hidden;padding:0;width:40px;height:40px;border-radius:11px;background:var(--p);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex:none}
 .cab b{display:block;font-size:15px;line-height:1.25}
 .cab span{font-size:12px;color:var(--mut)}
 h1{font-family:"Newsreader",Georgia,serif;font-size:27px;font-weight:600;line-height:1.2;letter-spacing:-.2px}
@@ -61,12 +61,13 @@ input:focus{border-color:var(--p);box-shadow:0 0 0 3px var(--p-suave)}
 .entra{animation:entra .3s ease}
 @keyframes pop{0%{transform:scale(.6)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
 .pop{animation:pop .45s ease}
+.marca img{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit}
 </style>
 </head>
 <body>
 <div class="tel">
   <div class="cab">
-    <div class="marca">DR</div>
+    <div class="marca"><img src="icons/logo.png" alt="Club Donde Raulito"></div>
     <div><b>Almacén Donde Raulito</b><span>Av. El Descanso · Maipú</span></div>
   </div>
 
