@@ -33,7 +33,7 @@ svg.ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;str
 /* ===== barra lateral (desktop) ===== */
 .lateral{width:250px;flex:none;background:var(--lateral);color:var(--lateral-txt);position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:22px 16px}
 .lateral .brand{display:flex;align-items:center;gap:11px;padding:2px 8px 20px;border-bottom:1px solid rgba(255,255,255,.09)}
-.marca{width:40px;height:40px;border-radius:11px;background:var(--p);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;letter-spacing:.4px;flex:none}
+.marca{overflow:hidden;padding:0;width:40px;height:40px;border-radius:11px;background:var(--p);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;letter-spacing:.4px;flex:none}
 .lateral .brand b{display:block;font-size:14.5px;font-weight:650;line-height:1.25}
 .lateral .brand span{font-size:11.5px;color:var(--lateral-mut)}
 .lateral nav{margin-top:18px;display:flex;flex-direction:column;gap:3px}
@@ -180,6 +180,7 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
   .form-grid{grid-template-columns:1fr}
 }
 @media (min-width:960px){ .solo-movil{display:none} }
+.marca img{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit}
 </style>
 </head>
 <body>
@@ -188,7 +189,7 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
   <!-- lateral desktop -->
   <aside class="lateral">
     <div class="brand">
-      <div class="marca">DR</div>
+      <div class="marca"><img src="icons/logo.png" alt="Club Donde Raulito"></div>
       <div><b id="h-nombre-lat">Almacén Donde Raulito</b><span>Club de Clientes</span></div>
     </div>
     <nav>
@@ -207,7 +208,7 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
   <div class="contenido">
     <!-- topbar móvil -->
     <div class="topbar"><div class="in">
-      <div class="marca">DR</div>
+      <div class="marca"><img src="icons/logo.png" alt="Club Donde Raulito"></div>
       <div><b id="h-nombre">Almacén Donde Raulito</b><span>Club de Clientes · Maipú</span></div>
       <span class="club">Club</span>
     </div></div>
