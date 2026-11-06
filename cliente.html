@@ -114,7 +114,7 @@ input:focus{border-color:var(--p);box-shadow:0 0 0 3px var(--p-suave)}
 <script>
 "use strict";
 var CLAVE = "raulito-cliente-v1";
-var CLUB = {nombre:"Almacén Donde Raulito", meta:10, recompensa:"un 10% de descuento en tu próxima compra", cumplePct:10};
+var CLUB = {nombre:"Almacén Donde Raulito", meta:10, recompensa:"un 10% de descuento en tu próxima compra", cumplePct:10, resenaUrl:""};
 var yo = cargar();
 
 function cargar(){ try{ var d = JSON.parse(localStorage.getItem(CLAVE)); if(d && d.nombre) return d; }catch(e){} return null; }
@@ -194,14 +194,14 @@ function pintar(){
   document.getElementById("e-texto").textContent = texto;
 
   var extra = "";
-  if(yo.visitasTotal>=3 && !yo.resenaVista){
+  if(yo.visitasTotal>=3 && !yo.resenaVista && CLUB.resenaUrl){
     extra = '<div class="card entra" style="text-align:center"><p style="font-weight:650;font-size:15px">¿Te gusta comprar aquí?</p><p class="sub" style="font-size:13.5px">Una reseña en Google ayuda a que más vecinos conozcan el almacén.</p><button class="btn" style="height:44px;font-size:14.5px" onclick="accionResena(true)">Dejar una reseña</button><button class="btn sec" style="margin-top:9px" onclick="accionResena(false)">Ahora no</button></div>';
   }
   document.getElementById("zona-extra").innerHTML = extra;
 }
 function accionResena(acepta){
   if(yo){ yo.resenaVista = true; guardar(); }
-  if(acepta) alert("Aquí se abriría el link de reseñas de Google del almacén (Raúl lo pega en los ajustes cuando lo tenga).");
+  if(acepta && CLUB.resenaUrl) window.open(CLUB.resenaUrl, "_blank");
   pintar();
 }
 
@@ -255,6 +255,7 @@ function aplicarCfgNube(cfg){
   if(cfg.nombre) CLUB.nombre = cfg.nombre;
   if(cfg.meta) CLUB.meta = cfg.meta;
   if(cfg.cumplePct !== undefined) CLUB.cumplePct = cfg.cumplePct;
+  if(cfg.resenaUrl !== undefined) CLUB.resenaUrl = cfg.resenaUrl || "";
   CLUB.recompensa = recompensaDeCfg(Object.assign({tipo:"descuento", pct:10, prod:""}, cfg));
   var bm = document.getElementById("b-monto");
   if(bm && cfg.montoBonus !== undefined) bm.textContent = "$" + Number(cfg.montoBonus || 0).toLocaleString("es-CL");
