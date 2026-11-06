@@ -50,11 +50,6 @@ input:focus{border-color:var(--p);box-shadow:0 0 0 3px var(--p-suave)}
 .aviso.dorado{background:#fdf3e0;color:#7c5410}
 .aviso b{font-weight:700}
 .aviso svg{width:19px;height:19px;flex:none;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;margin-top:1px}
-.demo{margin-top:26px;border:1.5px dashed var(--borde);border-radius:14px;padding:14px 16px;background:transparent}
-.demo p{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--mut);margin-bottom:4px}
-.demo span{font-size:12.5px;color:var(--mut);display:block;margin-bottom:10px}
-.demo .fila{display:flex;gap:8px;flex-wrap:wrap}
-.demo button{flex:1;background:#fff;border:1.5px solid var(--borde);border-radius:10px;padding:9px 8px;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--txt)}
 .pie{text-align:center;color:var(--mut);font-size:12px;margin-top:22px;line-height:1.6}
 .oculto{display:none}
 @keyframes entra{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
@@ -108,16 +103,6 @@ input:focus{border-color:var(--p);box-shadow:0 0 0 3px var(--p-suave)}
     </div>
     <div id="zona-extra"></div>
     <button class="btn suave" id="btn-mostrar">Mostrar mi tarjeta en caja</button>
-  </div>
-
-  <!-- DEMO -->
-  <div class="demo">
-    <p>Modo demostración</p>
-    <span>Esto lo ve solo quien está probando la app. Sirve para mostrarle a Raúl cómo avanza un cliente sin esperar días reales.</span>
-    <div class="fila">
-      <button id="btn-simular">Simular la visita de mañana</button>
-      <button id="btn-reiniciar">Reiniciar demo</button>
-    </div>
   </div>
 
   <p class="pie">Almacén Donde Raulito · Av. El Descanso, Maipú<br>Club de Clientes</p>
@@ -244,20 +229,6 @@ document.getElementById("btn-registrarme").addEventListener("click", function(){
 });
 document.getElementById("btn-mostrar").addEventListener("click", function(){
   alert("Muestra esta pantalla en caja: el vendedor verá tu nombre y tus visitas, y podrá canjear tu recompensa si tienes una.");
-});
-document.getElementById("btn-simular").addEventListener("click", function(){
-  if(!yo){ alert("Primero regístrate en la demo para simular visitas."); return; }
-  var d = new Date(); d.setDate(d.getDate()+1);
-  var manana = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
-  // adelanta la marca interna un día para permitir otra visita "mañana"
-  yo.ultimaVisita = "";
-  resultadoTap = contarVisita(yo, manana);
-  yo.ultimaVisita = hoyStr(); // vuelve a hoy para que un tap real hoy no duplique
-  guardar(); pintar(); window.scrollTo(0,0);
-});
-document.getElementById("btn-reiniciar").addEventListener("click", function(){
-  if(!confirm("¿Reiniciar la demo? Se borra el socio de este navegador.")) return;
-  localStorage.removeItem(CLAVE); yo = null; resultadoTap = null; pintar(); window.scrollTo(0,0);
 });
 pintar();
 </script>
