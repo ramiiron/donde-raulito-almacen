@@ -334,7 +334,10 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
           <div class="card">
             <h3>Datos del negocio</h3>
             <label>Nombre</label><input id="a-nombre" type="text">
-            <button class="btn bloque" id="btn-nombre">Guardar nombre</button>
+            <label style="margin-top:14px">Link de reseñas de Google</label>
+            <input id="a-resena" type="url" placeholder="https://g.page/r/...">
+            <p class="ayuda">Con este link, la tarjeta del cliente muestra el botón «Dejar una reseña» desde su tercera visita. Se obtiene en el Perfil de Empresa de Google del almacén, opción «Pedir reseñas». Si queda vacío, el botón no aparece.</p>
+            <button class="btn bloque" id="btn-nombre">Guardar datos del negocio</button>
           </div>
         </div>
         <div>
@@ -385,7 +388,7 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
 <script>
 "use strict";
 var CLAVE = "raulito-club-v1";
-var cfgDef = {nombre:"Almacén Donde Raulito", meta:10, tipo:"descuento", pct:10, prod:"", cumplePct:10, color:"#1f6f43", diasInactivo:21, montoBonus:20000};
+var cfgDef = {nombre:"Almacén Donde Raulito", meta:10, tipo:"descuento", pct:10, prod:"", cumplePct:10, color:"#1f6f43", diasInactivo:21, montoBonus:20000, resenaUrl:""};
 var st = cargar();
 if(!st.avisos) st.avisos = {};
 if(!st.camp) st.camp = {texto:"", ronda:""};
@@ -752,7 +755,8 @@ document.getElementById("btn-reglas").addEventListener("click", function(){
   guardar(); pintarTodo(); toast("Reglas guardadas");
 });
 document.getElementById("btn-nombre").addEventListener("click", function(){
-  st.cfg.nombre = document.getElementById("a-nombre").value.trim() || st.cfg.nombre; guardar(); pintarTodo(); toast("Nombre guardado");
+  st.cfg.nombre = document.getElementById("a-nombre").value.trim() || st.cfg.nombre;
+  st.cfg.resenaUrl = document.getElementById("a-resena").value.trim(); guardar(); pintarTodo(); toast("Datos del negocio guardados");
 });
 var PALETA = ["#1f6f43","#17557e","#8c2f2f","#b25b12","#5b4a8a","#0f6a63","#5d4232","#3d4a57"];
 var contCol = document.getElementById("colores");
@@ -818,6 +822,7 @@ function sincronizarAjustes(){
   document.getElementById("a-cumple-pct").value = st.cfg.cumplePct;
   document.getElementById("a-monto").value = st.cfg.montoBonus || 0;
   document.getElementById("a-nombre").value = st.cfg.nombre;
+  document.getElementById("a-resena").value = st.cfg.resenaUrl || "";
   document.getElementById("a-color").value = st.cfg.color;
 }
 sincronizarAjustes(); aplicarColor(); pintarTodo();
