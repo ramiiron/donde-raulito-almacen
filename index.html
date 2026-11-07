@@ -131,6 +131,8 @@ input[type="color"]{height:46px;padding:4px;cursor:pointer}
 .chip .ic{width:11px;height:11px}
 .vacio{color:var(--mut);font-size:13.5px;text-align:center;padding:26px 14px;border:1.5px dashed var(--borde);border-radius:var(--radio);background:var(--card)}
 .ayuda{font-size:13px;color:var(--mut);line-height:1.6}
+.consent-check{display:flex;gap:9px;align-items:flex-start;margin:12px 0 2px;font-size:13.5px;cursor:pointer}
+.consent-check input{width:18px;height:18px;margin-top:2px;flex:none}
 .ayuda b{color:var(--txt)}
 .tabla-wrap{background:var(--card);border:1px solid var(--borde);border-radius:var(--radio);box-shadow:var(--sombra);overflow:auto}
 table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:760px}
@@ -262,6 +264,7 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
         <label>Fecha de nacimiento</label>
         <input id="n-cumple" type="date">
         <p class="ayuda" style="margin-top:8px">Con su fecha de nacimiento, la app avisa cuándo viene su cumpleaños para felicitarlo y aplicar su descuento.</p>
+        <label class="consent-check"><input type="checkbox" id="n-consent"><span>El cliente autorizó guardar sus datos para el Club: nombre, teléfono y cumpleaños, solo para sus visitas y beneficios.</span></label>
         <button class="btn bloque" id="btn-nuevo">Registrar cliente</button>
       </div>
       <div class="card ancho-form">
@@ -720,9 +723,10 @@ document.getElementById("btn-nuevo").addEventListener("click", function(){
   if(!fono){ toast("Falta el teléfono: lo necesitamos para avisarle"); return; }
   var fonoOk = fonoCanonico(fono);
   if(!fonoOk){ toast("Ese teléfono no es un celular chileno válido (formato +56 9 XXXX XXXX)"); return; }
-  st.clientes.push({id:uid(), nombre:nombre, telefono:fonoOk, cumple:cumple||"", visitas:0, visitasTotal:0, recompensas:0, ultima:"", creado:hoyStr()});
+  if(!document.getElementById("n-consent").checked){ toast("Marca la autorización del cliente: hay que explicarle y que acepte"); return; }
+  st.clientes.push({id:uid(), nombre:nombre, telefono:fonoOk, cumple:cumple||"", visitas:0, visitasTotal:0, recompensas:0, ultima:"", consentimiento:true, consentFecha:hoyStr(), creado:hoyStr()});
   guardar();
-  document.getElementById("n-nombre").value = ""; document.getElementById("n-fono").value = ""; document.getElementById("n-cumple").value = "";
+  document.getElementById("n-nombre").value = ""; document.getElementById("n-fono").value = ""; document.getElementById("n-cumple").value = ""; document.getElementById("n-consent").checked = false;
   pintarTodo(); toast("Cliente registrado"); irA("clientes");
 });
 document.getElementById("btn-editar").addEventListener("click", function(){
@@ -852,11 +856,11 @@ function esDemoC(c){
 function canonObj(o){ var r = {}; Object.keys(o).sort().forEach(function(k){ r[k] = o[k]; }); return JSON.stringify(r); }
 function docDeCliente(c){
   return {nombre:c.nombre, telefono:c.telefono, cumple:c.cumple || "", visitas:c.visitas || 0, visitasTotal:c.visitasTotal || 0,
-          recompensas:c.recompensas || 0, creado:c.creado || "", ultima:c.ultima || "", bonus:c.bonus || 0, ultimoBonus:c.ultimoBonus || ""};
+          recompensas:c.recompensas || 0, creado:c.creado || "", ultima:c.ultima || "", bonus:c.bonus || 0, ultimoBonus:c.ultimoBonus || "", consentimiento:!!c.consentimiento, consentFecha:c.consentFecha || ""};
 }
 function clienteDeDoc(id, d){
   return {id:id, nombre:d.nombre || "", telefono:id, cumple:d.cumple || "", visitas:d.visitas || 0, visitasTotal:d.visitasTotal || 0,
-          recompensas:d.recompensas || 0, creado:d.creado || "", ultima:d.ultima || "", bonus:d.bonus || 0, ultimoBonus:d.ultimoBonus || ""};
+          recompensas:d.recompensas || 0, creado:d.creado || "", ultima:d.ultima || "", bonus:d.bonus || 0, ultimoBonus:d.ultimoBonus || "", consentimiento:!!d.consentimiento, consentFecha:d.consentFecha || ""};
 }
 function guardarLocalP(){ try{ localStorage.setItem(CLAVE, JSON.stringify(st)); }catch(e){} }
 function pintarEstadoNubeP(){
