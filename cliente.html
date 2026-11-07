@@ -216,6 +216,7 @@ function fonoCanonico(fono){
   if(d.length===11 && d.indexOf("569")===0) return d;
   if(d.length===9 && d.charAt(0)==="9") return "56" + d;
   if(d.length===8) return "569" + d;
+  if(d.length>=10 && d.length<=15) return d;
   return "";
 }
 document.getElementById("btn-registrarme").addEventListener("click", function(){
@@ -225,7 +226,7 @@ document.getElementById("btn-registrarme").addEventListener("click", function(){
   if(!nombre){ alert("Cuéntanos tu nombre para crear tu tarjeta."); return; }
   if(!fono){ alert("Necesitamos tu teléfono para reconocer tu tarjeta cuando vuelvas."); return; }
   var fonoOk = fonoCanonico(fono);
-  if(!fonoOk){ alert("Ese número no parece un celular chileno. El formato es +56 9 1234 5678: revísalo e inténtalo de nuevo."); return; }
+  if(!fonoOk){ alert("Ese número no parece válido. Escríbelo en formato WhatsApp, con código de país: por ejemplo +56 9 1234 5678 o +1 801 234 5678."); return; }
   if(!document.getElementById("c-consent").checked){ alert("Para crear tu tarjeta, marca la casilla aceptando que guardemos tus datos."); return; }
   yo = {nombre:nombre, telefono:fonoOk, cumple:cumple||"", visitas:0, visitasTotal:0, recompensas:0, ultimaVisita:"", desde:hoyStr(), consentimiento:true, consentFecha:hoyStr(), resenaVista:false};
   resultadoTap = contarVisita(yo, hoyStr()); // el día del registro ya cuenta como su primera visita
