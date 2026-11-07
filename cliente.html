@@ -51,6 +51,9 @@ input:focus{border-color:var(--p);box-shadow:0 0 0 3px var(--p-suave)}
 .aviso b{font-weight:700}
 .aviso svg{width:19px;height:19px;flex:none;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;margin-top:1px}
 .pie{text-align:center;color:var(--mut);font-size:12px;margin-top:22px;line-height:1.6}
+.priv{font-size:12.5px;color:var(--mut);line-height:1.55;margin-top:16px}
+.consent{display:flex;gap:10px;align-items:flex-start;margin:12px 0 0;font-size:13.5px;font-weight:500;color:var(--txt);text-transform:none;letter-spacing:0;cursor:pointer}
+.consent input{width:20px;height:20px;flex:none;margin-top:1px;padding:0;accent-color:var(--p)}
 .oculto{display:none}
 @keyframes entra{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .entra{animation:entra .3s ease}
@@ -83,8 +86,9 @@ input:focus{border-color:var(--p);box-shadow:0 0 0 3px var(--p-suave)}
       <input id="c-fono" type="tel" placeholder="Ej: +56 9 1234 5678" autocomplete="tel">
       <label>Tu fecha de nacimiento</label>
       <input id="c-cumple" type="date">
+      <p class="priv">Guardamos tu nombre, teléfono y fecha de nacimiento solo para llevar tus visitas del Club, avisarte de tus beneficios y saludarte en tu cumpleaños. No compartimos tus datos con nadie. Si alguna vez quieres que los borremos, pídelo en el mesón y se eliminan de inmediato.</p>
+      <label class="consent"><input type="checkbox" id="c-consent"><span>Acepto que el almacén guarde mis datos para el Club de Clientes.</span></label>
       <button class="btn" id="btn-registrarme">Quiero ser parte del Club</button>
-      <p class="sub" style="font-size:12.5px;text-align:center;margin-top:12px">Solo guardamos tu nombre, teléfono y cumpleaños para llevar tu cuenta de visitas.</p>
     </div>
   </div>
 
@@ -222,7 +226,8 @@ document.getElementById("btn-registrarme").addEventListener("click", function(){
   if(!fono){ alert("Necesitamos tu teléfono para reconocer tu tarjeta cuando vuelvas."); return; }
   var fonoOk = fonoCanonico(fono);
   if(!fonoOk){ alert("Ese número no parece un celular chileno. El formato es +56 9 1234 5678: revísalo e inténtalo de nuevo."); return; }
-  yo = {nombre:nombre, telefono:fonoOk, cumple:cumple||"", visitas:0, visitasTotal:0, recompensas:0, ultimaVisita:"", desde:hoyStr(), resenaVista:false};
+  if(!document.getElementById("c-consent").checked){ alert("Para crear tu tarjeta, marca la casilla aceptando que guardemos tus datos."); return; }
+  yo = {nombre:nombre, telefono:fonoOk, cumple:cumple||"", visitas:0, visitasTotal:0, recompensas:0, ultimaVisita:"", desde:hoyStr(), consentimiento:true, consentFecha:hoyStr(), resenaVista:false};
   resultadoTap = contarVisita(yo, hoyStr()); // el día del registro ya cuenta como su primera visita
   guardar(); pintar();
   window.scrollTo(0,0);
@@ -234,7 +239,7 @@ pintar();
 </script>
 
 <script>
-/* ===== Nube compartida (Firebase, mismo proyecto que la app de huevos) =====
+/* ===== Nube compartida (Firebase, proyecto propio donde-raulito) =====
    La tarjeta del cliente y el panel de Raúl leen/escriben el mismo registro:
    coleccion raulito_club_clientes (doc = telefono) y raulito_club_config/app. */
 var FIREBASE_CONFIG = {
@@ -261,7 +266,7 @@ function aplicarCfgNube(cfg){
   if(bm && cfg.montoBonus !== undefined) bm.textContent = "$" + Number(cfg.montoBonus || 0).toLocaleString("es-CL");
 }
 function docDesdeYo(){
-  return {nombre: yo.nombre, telefono: yo.telefono, cumple: yo.cumple || "", visitas: yo.visitas, visitasTotal: yo.visitasTotal, recompensas: yo.recompensas, creado: yo.desde || hoyStr(), ultima: yo.ultimaVisita || ""};
+  return {nombre: yo.nombre, telefono: yo.telefono, cumple: yo.cumple || "", visitas: yo.visitas, visitasTotal: yo.visitasTotal, recompensas: yo.recompensas, creado: yo.desde || hoyStr(), ultima: yo.ultimaVisita || "", consentimiento: !!yo.consentimiento, consentFecha: yo.consentFecha || ""};
 }
 function adoptarDocC(d){
   nubeAplicandoC = true;
@@ -270,6 +275,7 @@ function adoptarDocC(d){
   yo.visitas = d.visitas || 0; yo.visitasTotal = d.visitasTotal || 0; yo.recompensas = d.recompensas || 0;
   yo.ultimaVisita = d.ultima || yo.ultimaVisita;
   if(d.creado) yo.desde = d.creado;
+  if(d.consentimiento){ yo.consentimiento = true; if(d.consentFecha) yo.consentFecha = d.consentFecha; }
   guardar();
   nubeAplicandoC = false;
   pintar();
