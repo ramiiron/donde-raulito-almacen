@@ -133,6 +133,14 @@ input[type="color"]{height:46px;padding:4px;cursor:pointer}
 .ayuda{font-size:13px;color:var(--mut);line-height:1.6}
 .consent-check{display:flex;gap:9px;align-items:flex-start;margin:12px 0 2px;font-size:13.5px;cursor:pointer}
 .consent-check input{width:18px;height:18px;margin-top:2px;flex:none}
+#v-login{position:fixed;inset:0;z-index:3000;background:var(--fondo,#f4f3f0);display:flex;align-items:center;justify-content:center;padding:20px}
+.login-card{background:#fff;border:1px solid var(--borde,#e6e1d6);border-radius:18px;box-shadow:0 18px 44px -18px rgba(27,26,23,.35);max-width:380px;width:100%;padding:28px 24px;text-align:left}
+.login-card img{width:58px;height:58px;border-radius:14px;display:block;margin-bottom:14px}
+.login-card h2{font-family:"Newsreader",Georgia,serif;font-size:24px;font-weight:600;margin-bottom:4px}
+.login-card p{color:var(--mut);font-size:13.5px;line-height:1.55}
+.login-error{background:#fdeeee;color:#8c2f22;border-radius:10px;padding:10px 12px;font-size:13px;margin-top:12px;line-height:1.45}
+.login-ok{background:var(--p-suave,#e9f2ec);color:var(--p-osc,#175735)}
+.login-link{display:block;margin:14px auto 0;background:none;border:none;color:var(--p);font-size:13.5px;font-weight:600;cursor:pointer;text-align:center;width:100%}
 .ayuda b{color:var(--txt)}
 .tabla-wrap{background:var(--card);border:1px solid var(--borde);border-radius:var(--radio);box-shadow:var(--sombra);overflow:auto}
 table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:760px}
@@ -186,6 +194,20 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
 </style>
 </head>
 <body>
+<div id="v-login">
+  <div class="login-card">
+    <img src="icons/logo.png" alt="Club Donde Raulito">
+    <h2>Panel del Club</h2>
+    <p>Ingresa con la cuenta del almacén para ver y administrar los clientes.</p>
+    <label>Correo</label>
+    <input id="login-email" type="email" autocomplete="username" placeholder="correo@ejemplo.cl">
+    <label>Contraseña</label>
+    <input id="login-pass" type="password" autocomplete="current-password" placeholder="Tu contraseña">
+    <p class="login-error" id="login-error" style="display:none"></p>
+    <button class="btn bloque" id="btn-login">Ingresar</button>
+    <button class="login-link" id="login-olvide">Olvidé mi contraseña</button>
+  </div>
+</div>
 <div class="app">
 
   <!-- lateral desktop -->
@@ -355,6 +377,7 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
           <div class="card">
             <h3>Respaldo y datos</h3>
             <button class="btn sec bloque" id="btn-exportar">Exportar respaldo (archivo)</button>
+            <button class="btn sec bloque" id="btn-salir" style="margin-top:10px">Cerrar sesión del panel</button>
             <label>Importar respaldo</label>
             <input id="imp" type="file" accept=".json,application/json">
             <hr class="sep">
@@ -896,7 +919,10 @@ function nubeInitP(){
   if(typeof firebase === "undefined"){ pintarEstadoNubeP(); return; }
   try{
     if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
-    firebase.auth().signInAnonymously().then(function(){
+    firebase.auth().onAuthStateChanged(function(user){
+      if(!user || user.isAnonymous){ if(user) firebase.auth().signOut(); return; }
+      if(panelNubeIniciada) return; panelNubeIniciada = true;
+      var g = document.getElementById("v-login"); if(g) g.style.display = "none";
       nubeDbP = firebase.firestore(); nubeOnP = true; pintarEstadoNubeP();
       nubeLocalesPrevios = st.clientes.filter(function(c){ return !esDemoC(c) && c.telefono; });
       nubeDbP.collection("raulito_club_config").doc("app").onSnapshot(function(doc){
@@ -933,10 +959,43 @@ function nubeInitP(){
         nubeAplicandoP = false;
       }, function(){});
       setTimeout(sincronizarNubeP, 1800);
-    }).catch(function(){ pintarEstadoNubeP(); });
+    });
   }catch(e){ pintarEstadoNubeP(); }
 }
 nubeInitP();
+
+/* ---------- Ingreso al panel (cuenta con correo y contraseña) ---------- */
+var panelNubeIniciada = false;
+function loginMsg(txt, ok){
+  var e = document.getElementById("login-error"); if(!e) return;
+  e.textContent = txt; e.style.display = "block";
+  e.classList.toggle("login-ok", !!ok);
+}
+function intentarLogin(){
+  var email = document.getElementById("login-email").value.trim();
+  var pass = document.getElementById("login-pass").value;
+  if(!email || !pass){ loginMsg("Escribe tu correo y tu contraseña."); return; }
+  firebase.auth().signInWithEmailAndPassword(email, pass).catch(function(err){
+    if(err && err.code === "auth/too-many-requests") loginMsg("Demasiados intentos seguidos. Espera unos minutos e inténtalo de nuevo.");
+    else loginMsg("No pudimos ingresar: revisa el correo y la contraseña.");
+  });
+}
+var _bl = document.getElementById("btn-login");
+if(_bl) _bl.addEventListener("click", intentarLogin);
+var _lp = document.getElementById("login-pass");
+if(_lp) _lp.addEventListener("keydown", function(ev){ if(ev.key === "Enter") intentarLogin(); });
+var _lo = document.getElementById("login-olvide");
+if(_lo) _lo.addEventListener("click", function(){
+  var email = document.getElementById("login-email").value.trim();
+  if(!email){ loginMsg("Escribe primero tu correo y después toca «Olvidé mi contraseña»."); return; }
+  firebase.auth().sendPasswordResetEmail(email).then(function(){
+    loginMsg("Te enviamos un correo para crear una contraseña nueva. Revisa la bandeja de " + email + ".", true);
+  }).catch(function(){ loginMsg("No pudimos enviar el correo. Revisa que la dirección esté bien escrita."); });
+});
+var _bs = document.getElementById("btn-salir");
+if(_bs) _bs.addEventListener("click", function(){
+  firebase.auth().signOut().then(function(){ location.reload(); }).catch(function(){ location.reload(); });
+});
 </script>
 </body>
 </html>
