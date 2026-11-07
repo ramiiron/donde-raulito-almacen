@@ -454,19 +454,22 @@ function recompensaTxt(){
   return st.cfg.tipo==="producto" ? (st.cfg.prod ? st.cfg.prod : "un producto gratis") : ("un " + st.cfg.pct + "% de descuento en tu próxima compra");
 }
 function fonoCanonico(fono){
-  // Formato oficial del club: celular chileno +56 9 XXXX XXXX (11 digitos, parte con 569)
+  // Chileno: se completa a 569XXXXXXXX. Otros países: formato WhatsApp completo
+  // (código de país + número, 10 a 15 dígitos), se guarda tal cual en dígitos.
   var d = String(fono||"").replace(/\D/g,"");
   if(d.charAt(0)==="0") d = d.slice(1);
   if(d.length===11 && d.indexOf("569")===0) return d;
   if(d.length===9 && d.charAt(0)==="9") return "56" + d;
   if(d.length===8) return "569" + d;
+  if(d.length>=10 && d.length<=15) return d;
   return "";
 }
 function fonoWa(fono){ return fonoCanonico(fono); }
 function fonoFmt(fono){
   var d = fonoCanonico(fono);
   if(!d) return String(fono||"");
-  return "+56 9 " + d.slice(3,7) + " " + d.slice(7);
+  if(d.length===11 && d.indexOf("569")===0) return "+56 9 " + d.slice(3,7) + " " + d.slice(7);
+  return "+" + d;
 }
 function msgProgreso(c){
   var f = faltaPara(c);
@@ -745,7 +748,7 @@ document.getElementById("btn-nuevo").addEventListener("click", function(){
   if(!nombre){ toast("Falta el nombre"); return; }
   if(!fono){ toast("Falta el teléfono: lo necesitamos para avisarle"); return; }
   var fonoOk = fonoCanonico(fono);
-  if(!fonoOk){ toast("Ese teléfono no es un celular chileno válido (formato +56 9 XXXX XXXX)"); return; }
+  if(!fonoOk){ toast("Ese teléfono no es válido (formato WhatsApp con código de país, ej: +56 9 XXXX XXXX)"); return; }
   if(!document.getElementById("n-consent").checked){ toast("Marca la autorización del cliente: hay que explicarle y que acepte"); return; }
   st.clientes.push({id:uid(), nombre:nombre, telefono:fonoOk, cumple:cumple||"", visitas:0, visitasTotal:0, recompensas:0, ultima:"", consentimiento:true, consentFecha:hoyStr(), creado:hoyStr()});
   guardar();
@@ -759,7 +762,7 @@ document.getElementById("btn-editar").addEventListener("click", function(){
   var fonoEd = document.getElementById("e-fono").value.trim();
   if(fonoEd){
     var fonoEdOk = fonoCanonico(fonoEd);
-    if(!fonoEdOk){ toast("Ese teléfono no es un celular chileno válido (formato +56 9 XXXX XXXX)"); return; }
+    if(!fonoEdOk){ toast("Ese teléfono no es válido (formato WhatsApp con código de país, ej: +56 9 XXXX XXXX)"); return; }
     c.telefono = fonoEdOk;
   }
   c.cumple = document.getElementById("e-cumple").value || "";
