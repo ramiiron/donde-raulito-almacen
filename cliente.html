@@ -143,9 +143,26 @@ function contarVisita(socio, fecha){
   socio.ultimaVisita = fecha;
   socio.visitas++; socio.visitasTotal++;
   var gano = false;
-  if(socio.visitas >= CLUB.meta){ socio.visitas = 0; socio.recompensas++; gano = true; }
+  if(socio.visitas >= CLUB.meta){ socio.visitas = 0; gano = true; } // el premio NO suma aquí: se anota como id pendiente (v19), la tarjeta nunca escribe «recompensas»
   return {contada:true, gano:gano, visitas:socio.visitas};
 }
+
+/* ---------- premios sin choque de escrituras (v19) ----------
+   «recompensas» en la nube lo escribe SOLO el panel (canjes y dobleos).
+   Cuando esta tarjeta gana un premio, anota un id único en la lista
+   premiosIds de la nube (arrayUnion: repetir el envío no duplica) y el
+   panel lo dobla a recompensas. Así, una copia vieja de este teléfono
+   jamás puede revivir un premio ya canjeado. */
+if(yo){ if(!Array.isArray(yo.premiosNube)) yo.premiosNube = []; if(!Array.isArray(yo.premiosLocales)) yo.premiosLocales = []; }
+function nuevoPremioId(){ return "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+function premiosPendientes(){
+  if(!yo) return 0;
+  var vistos = {}, n = 0, i;
+  var todos = (yo.premiosNube || []).concat(yo.premiosLocales || []);
+  for(i=0;i<todos.length;i++){ if(!vistos[todos[i]]){ vistos[todos[i]] = 1; n++; } }
+  return n;
+}
+function recompensasEf(){ return (yo.recompensas || 0) + premiosPendientes(); }
 
 /* ---------- código de caja (v18) ----------
    La visita solo se anota con el código rotativo que muestra el panel en
@@ -172,7 +189,7 @@ function resolverTap(){
   if(tapResuelto || !yo) return;
   tapResuelto = true;
   if(yo.ultimaVisita === hoyStr()) resultadoTap = {contada:false, gano:false, visitas:yo.visitas, yaHoy:true};
-  else if(codigoVivo()) resultadoTap = contarVisita(yo, hoyStr());
+  else if(codigoVivo()){ resultadoTap = contarVisita(yo, hoyStr()); if(resultadoTap.gano) yo.premiosLocales.push(nuevoPremioId()); }
   else resultadoTap = {contada:false, gano:false, visitas:yo.visitas, sinCodigo:true};
   guardar(); pintar();
 }
@@ -198,13 +215,16 @@ function pintar(){
 
   var aviso = "", titulo = "", texto = "";
   var falta = CLUB.meta - yo.visitas;
-  if(yo.recompensas>0){
-    titulo = "Tienes una recompensa lista";
-    texto = "En tu próxima compra pide canjear: " + CLUB.recompensa + ". Muestra esta pantalla en caja.";
+  var recEf = recompensasEf();
+  if(recEf > 0){
     aviso = '<div class="aviso dorado entra"><svg viewBox="0 0 24 24"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><div><b>Recompensa disponible.</b> ' + esc(CLUB.recompensa.charAt(0).toUpperCase() + CLUB.recompensa.slice(1)) + " te espera en caja.</div></div>";
-  } else if(resultadoTap && resultadoTap.gano){
+  }
+  if(resultadoTap && resultadoTap.gano){
     titulo = "¡Completaste tu tarjeta!";
     texto = "Con la visita de hoy juntaste las " + CLUB.meta + " visitas. Tu recompensa quedó guardada en tu tarjeta.";
+  } else if(recEf > 0){
+    titulo = "Tienes una recompensa lista";
+    texto = "En tu próxima compra pide canjear: " + CLUB.recompensa + ". Muestra esta pantalla en caja.";
   } else if(resultadoTap && resultadoTap.contada){
     titulo = "Visita registrada";
     texto = "Ya llevas " + yo.visitas + " de " + CLUB.meta + " visitas. " + (falta===1 ? "Te falta solo 1 visita para tu recompensa." : "Te faltan " + falta + " visitas para tu recompensa.");
@@ -267,9 +287,9 @@ document.getElementById("btn-registrarme").addEventListener("click", function(){
   if(!fonoOk){ alert("Ese número no parece válido. Escríbelo en formato WhatsApp, con código de país: por ejemplo +56 9 1234 5678 o +1 801 234 5678."); return; }
   if(!document.getElementById("c-consent").checked){ alert("Para crear tu tarjeta, marca la casilla aceptando que guardemos tus datos."); return; }
   function completarRegistro(){
-    yo = {nombre:nombre, telefono:fonoOk, cumple:cumple||"", visitas:0, visitasTotal:0, recompensas:0, ultimaVisita:"", desde:hoyStr(), consentimiento:true, consentFecha:hoyStr(), resenaVista:false};
+    yo = {nombre:nombre, telefono:fonoOk, cumple:cumple||"", visitas:0, visitasTotal:0, recompensas:0, ultimaVisita:"", desde:hoyStr(), consentimiento:true, consentFecha:hoyStr(), resenaVista:false, premiosNube:[], premiosLocales:[]};
     tapResuelto = true; // la primera visita se decide aquí, no en resolverTap
-    if(codigoVivo()) resultadoTap = contarVisita(yo, hoyStr()); // se registró escaneando el código de caja: su primera visita cuenta
+    if(codigoVivo()){ resultadoTap = contarVisita(yo, hoyStr()); if(resultadoTap.gano) yo.premiosLocales.push(nuevoPremioId()); } // se registró escaneando el código de caja: su primera visita cuenta
     else resultadoTap = {contada:false, gano:false, visitas:0, sinCodigo:true, recien:true};
     guardar(); pintar();
     window.scrollTo(0,0);
@@ -323,14 +343,30 @@ function aplicarCfgNube(cfg){
   if(bm && cfg.montoBonus !== undefined) bm.textContent = "$" + Number(cfg.montoBonus || 0).toLocaleString("es-CL");
 }
 function docDesdeYo(){
-  return {nombre: yo.nombre, telefono: yo.telefono, cumple: yo.cumple || "", visitas: yo.visitas, visitasTotal: yo.visitasTotal, recompensas: yo.recompensas, creado: yo.desde || hoyStr(), ultima: yo.ultimaVisita || "", consentimiento: !!yo.consentimiento, consentFecha: yo.consentFecha || ""};
+  // SOLO para crear el registro (v19): los premios ganados antes de la
+  // primera sincronización entran directo en recompensas y la lista de
+  // pendientes nace vacía. Después de creado, esta tarjeta jamás vuelve a
+  // escribir recompensas, nombre ni cumpleaños: son campos del panel.
+  return {nombre: yo.nombre, telefono: yo.telefono, cumple: yo.cumple || "", visitas: yo.visitas, visitasTotal: yo.visitasTotal, recompensas: (yo.recompensas || 0) + (yo.premiosLocales || []).length, premiosIds: [], creado: yo.desde || hoyStr(), ultima: yo.ultimaVisita || "", consentimiento: !!yo.consentimiento, consentFecha: yo.consentFecha || ""};
 }
 function adoptarDocC(d){
   nubeAplicandoC = true;
   yo.nombre = d.nombre || yo.nombre;
   yo.cumple = d.cumple || "";
-  yo.visitas = d.visitas || 0; yo.visitasTotal = d.visitasTotal || 0; yo.recompensas = d.recompensas || 0;
-  yo.ultimaVisita = d.ultima || yo.ultimaVisita;
+  // Contadores monótonos (v19): nunca retroceden en esta tarjeta. Si este
+  // teléfono va adelante (acaba de contar una visita aún no subida), se
+  // conserva lo local y la próxima sincronización lo empuja; si la nube
+  // va adelante, manda la nube.
+  if((d.visitasTotal || 0) >= (yo.visitasTotal || 0)){
+    yo.visitas = d.visitas || 0; yo.visitasTotal = d.visitasTotal || 0;
+    yo.ultimaVisita = d.ultima || yo.ultimaVisita;
+  }
+  yo.recompensas = d.recompensas || 0; // las recompensas confirmadas las escribe solo el panel
+  yo.premiosNube = Array.isArray(d.premiosIds) ? d.premiosIds.slice() : [];
+  if(yo.premiosLocales && yo.premiosLocales.length){
+    // Un id local que ya aparece en la nube ya fue enviado: sale de la lista
+    yo.premiosLocales = yo.premiosLocales.filter(function(id){ return yo.premiosNube.indexOf(id) < 0; });
+  }
   if(d.creado) yo.desde = d.creado;
   if(d.consentimiento){ yo.consentimiento = true; if(d.consentFecha) yo.consentFecha = d.consentFecha; }
   guardar();
@@ -350,7 +386,7 @@ function nubeSuscribirC(fono){
   nubeDbC.collection("raulito_club_clientes").doc(fono).onSnapshot(function(doc){
     if(!doc.exists || nubeAplicandoC) return;
     var d = doc.data();
-    if((d.visitasTotal || 0) !== (yo.visitasTotal || 0) || (d.recompensas || 0) !== (yo.recompensas || 0) || (d.ultima || "") !== (yo.ultimaVisita || "") || (d.nombre || "") !== (yo.nombre || "")) adoptarDocC(d);
+    if((d.visitasTotal || 0) !== (yo.visitasTotal || 0) || (d.recompensas || 0) !== (yo.recompensas || 0) || ((d.premiosIds || []).length !== (yo.premiosNube || []).length) || (d.ultima || "") !== (yo.ultimaVisita || "") || (d.nombre || "") !== (yo.nombre || "")) adoptarDocC(d);
   }, function(){});
 }
 function nubeSincronizarYo(){
@@ -358,9 +394,37 @@ function nubeSincronizarYo(){
   nubeSuscribirC(yo.telefono);
   var ref = nubeDbC.collection("raulito_club_clientes").doc(yo.telefono);
   ref.get().then(function(snap){
-    var decision = decidirReconcilio(snap.exists ? snap.data() : null, yo, hoyStr());
-    if(decision === "adoptar") adoptarDocC(snap.data());
-    else ref.set(docDesdeYo(), {merge: true}).catch(function(){});
+    var docD = snap.exists ? snap.data() : null;
+    var decision = decidirReconcilio(docD, yo, hoyStr());
+    if(decision === "adoptar"){
+      adoptarDocC(docD);
+    } else if(decision === "crear"){
+      ref.set(docDesdeYo()).then(function(){
+        yo.recompensas = (yo.recompensas || 0) + (yo.premiosLocales || []).length;
+        yo.premiosLocales = []; yo.premiosNube = [];
+        guardar();
+      }).catch(function(){});
+    } else {
+      // «empujar» (v19): esta tarjeta SOLO escribe sus contadores (cuando
+      // va adelante) y sus premios pendientes como ids. Nunca escribe
+      // recompensas, nombre ni cumpleaños: son del panel, y así un premio
+      // canjeado por Raúl jamás revive por una copia vieja del teléfono.
+      var datos = {};
+      if((yo.visitasTotal || 0) > (docD.visitasTotal || 0)){
+        datos.visitas = yo.visitas; datos.visitasTotal = yo.visitasTotal; datos.ultima = yo.ultimaVisita || "";
+      }
+      var escrituras = [];
+      if(Object.keys(datos).length) escrituras.push(ref.update(datos));
+      if(yo.premiosLocales && yo.premiosLocales.length){
+        var ids = yo.premiosLocales.slice();
+        escrituras.push(ref.update({premiosIds: firebase.firestore.FieldValue.arrayUnion.apply(null, ids)}).then(function(){
+          yo.premiosNube = (yo.premiosNube || []).concat(ids);
+          yo.premiosLocales = [];
+          guardar();
+        }));
+      }
+      if(escrituras.length) Promise.all(escrituras).catch(function(){});
+    }
     syncListo = true; quizasResolverTap();
   }).catch(function(){ syncListo = true; quizasResolverTap(); });
 }
