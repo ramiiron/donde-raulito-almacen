@@ -1,5 +1,5 @@
-var CACHE = "club-raulito-v18";
-var BASE = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/logo.png", "./icons/icon-512.png"];
+var CACHE = "club-raulito-v19";
+var BASE = ["./", "./index.html", "./qrcode.min.js", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/logo.png", "./icons/icon-512.png"];
 self.addEventListener("install", function(e){
   e.waitUntil(caches.open(CACHE).then(function(c){ return c.addAll(BASE); }).then(function(){ return self.skipWaiting(); }));
 });
