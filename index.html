@@ -373,8 +373,10 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
               <div><label>Descuento de la recompensa (%)</label><input id="a-pct" type="number" min="1" max="90"></div>
               <div><label>Descuento por cumpleaños (%)</label><input id="a-cumple-pct" type="number" min="0" max="90"></div>
               <div><label>Compra desde ($) que da visita extra</label><input id="a-monto" type="number" min="0" step="500"></div>
+              <div><label>Compra mínima por visita ($)</label><input id="a-minimo" type="number" min="0" step="500"></div>
             </div>
             <p class="ayuda" style="margin-top:2px">Si un cliente compra por ese monto o más, en su ficha aparece el botón <b>Compra mayor</b>: le das una visita extra ese mismo día, además de la de su tap. Déjalo en 0 para desactivar la regla.</p>
+            <p class="ayuda" style="margin-top:2px">La <b>compra mínima</b> es lo que el cliente debe comprar para que su visita cuente. Aparece en el mensaje de bienvenida y en la tarjeta del cliente, para que lo sepa desde el primer día. La app la informa; tú la verificas en caja al ver la compra. Déjala en 0 si no quieres mínimo.</p>
             <label>Producto gratis (si eliges producto)</label>
             <input id="a-prod" type="text" placeholder="Ej: una bebida de 1,5 L">
             <button class="btn bloque" id="btn-reglas">Guardar reglas</button>
@@ -412,7 +414,7 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
             <p class="ayuda">Esto es lo que ve el cliente al abrir su tarjeta: su avance y su recompensa. Ojo: el QR impreso y la placa solo abren la tarjeta; desde la v18 la visita se anota con el código vivo del «Modo caja» o a mano desde la ficha del cliente.</p>
             <a class="btn sec bloque" href="cliente.html" target="_blank" rel="noopener" style="text-decoration:none">Ver la vista del cliente</a>
           </div>
-          <div class="card"><p class="ayuda"><b>Club en la nube (v19).</b> Los datos viven en la base propia del almacén y se comparten entre este panel y las tarjetas de los clientes. El panel pide ingreso con correo y contraseña, y las visitas de los clientes se anotan con el código rotativo del Modo caja. Los premios que un cliente gana en su tarjeta quedan «pendientes» y este panel los confirma solo al abrirse: un premio canjeado nunca se duplica.</p></div>
+          <div class="card"><p class="ayuda"><b>Club en la nube (v20).</b> Los datos viven en la base propia del almacén y se comparten entre este panel y las tarjetas de los clientes. El panel pide ingreso con correo y contraseña, y las visitas de los clientes se anotan con el código rotativo del Modo caja. Los premios que un cliente gana en su tarjeta quedan «pendientes» y este panel los confirma solo al abrirse: un premio canjeado nunca se duplica. La compra mínima por visita se informa en la bienvenida y en la tarjeta del cliente.</p></div>
         </div>
       </div>
     </section>
@@ -439,12 +441,13 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
 <script>
 "use strict";
 var CLAVE = "raulito-club-v1";
-var cfgDef = {nombre:"Almacén Donde Raulito", meta:10, tipo:"descuento", pct:10, prod:"", cumplePct:10, color:"#1f6f43", diasInactivo:21, montoBonus:20000, resenaUrl:""};
+var cfgDef = {nombre:"Almacén Donde Raulito", meta:10, tipo:"descuento", pct:10, prod:"", cumplePct:10, color:"#1f6f43", diasInactivo:21, montoBonus:20000, minCompra:3000, resenaUrl:""};
 var st = cargar();
 if(!st.avisos) st.avisos = {};
 if(!st.camp) st.camp = {texto:"", ronda:""};
 if(!st.cfg.diasInactivo) st.cfg.diasInactivo = 21;
 if(st.cfg.montoBonus===undefined) st.cfg.montoBonus = 20000;
+if(st.cfg.minCompra===undefined) st.cfg.minCompra = 3000;
 
 function cargar(){
   try{ var d = JSON.parse(localStorage.getItem(CLAVE)); if(d && d.clientes && d.cfg) return d; }catch(e){}
@@ -538,7 +541,7 @@ function generarAvisos(hoy){
     if(premiosEf(c)>0) out.push({c:c, tipo:"recompensa", clave:c.id+"|recompensa|"+c.visitasTotal, mensaje:msgProgreso(c)});
     if(dC===0) out.push({c:c, tipo:"cumplehoy", clave:c.id+"|cumplehoy|"+anioProxCumple(c.cumple, hoy), mensaje:msgCumple(c)});
     else if(dC!==null && dC>=1 && dC<=7) out.push({c:c, tipo:"cumple", clave:c.id+"|cumple|"+anioProxCumple(c.cumple, hoy), mensaje:"¡Hola " + primerNombre(c) + "! Te escribimos de " + st.cfg.nombre + ". En " + (dC===1 ? "1 día" : dC + " días") + " estarás de cumpleaños y queremos celebrarte: tienes un " + st.cfg.cumplePct + "% de descuento en tu compra de cumpleaños. ¡Te esperamos!"});
-    if(c.creado===hs) out.push({c:c, tipo:"bienvenida", clave:c.id+"|bienvenida|1", mensaje:"¡Hola " + primerNombre(c) + "! Bienvenido al Club de " + st.cfg.nombre + ". Desde hoy tus compras suman: junta " + st.cfg.meta + " visitas y gana " + recompensaTxt() + (c.ultima===hs ? ". Tu primera visita ya quedó registrada. " : ". En tu próxima compra, escanea el código de caja para anotar tu visita. ") + "¡Gracias por unirte!"});
+    if(c.creado===hs) out.push({c:c, tipo:"bienvenida", clave:c.id+"|bienvenida|1", mensaje:"¡Hola " + primerNombre(c) + "! Bienvenido al Club de " + st.cfg.nombre + ". Desde hoy tus compras suman: junta " + st.cfg.meta + " visitas y gana " + recompensaTxt() + (st.cfg.minCompra>0 ? ". Cada visita cuenta con compras desde " + montoTxt(st.cfg.minCompra) : "") + (c.ultima===hs ? ". Tu primera visita ya quedó registrada. " : ". En tu próxima compra, escanea el código de caja para anotar tu visita. ") + "¡Gracias por unirte!"});
     else if(c.ultima===hs && c.visitasTotal>0) out.push({c:c, tipo:"visita", clave:c.id+"|visita|"+c.ultima, mensaje:msgProgreso(c)});
     var ref = c.ultima || c.creado;
     var dd = diffDias(ref, hoy);
@@ -736,7 +739,7 @@ function pintarTodo(){
   document.getElementById("s-visitas-hoy").textContent = visitasHoy;
   document.getElementById("s-listas").textContent = listas;
   document.getElementById("s-cumples").textContent = cumples.filter(function(x){ return x.dias<=7; }).length;
-  document.getElementById("como-funciona").innerHTML = "Cada vez que un cliente registrado compra, tocas <b>+ Visita</b> en su ficha. Al juntar <b>" + st.cfg.meta + " visitas</b> gana <b>" + esc(recompensaTxt()) + "</b>. Con el botón WhatsApp le llega su progreso («llevas X, te faltan Y»). En su cumpleaños tiene un <b>" + st.cfg.cumplePct + "% de descuento</b> y la app te avisa para felicitarlo." + (st.cfg.montoBonus>0 ? " Si compra por <b>" + montoTxt(st.cfg.montoBonus) + "</b> o más, dale una visita extra con el botón <b>Compra mayor</b> de su ficha." : "") + " Con el <b>Modo caja</b> abierto junto a la caja, la visita también se anota sola cuando el cliente escanea el código vivo.";
+  document.getElementById("como-funciona").innerHTML = "Cada vez que un cliente registrado compra, tocas <b>+ Visita</b> en su ficha. Al juntar <b>" + st.cfg.meta + " visitas</b> gana <b>" + esc(recompensaTxt()) + "</b>." + (st.cfg.minCompra>0 ? " La visita cuenta con compras desde <b>" + montoTxt(st.cfg.minCompra) + "</b>." : "") + " Con el botón WhatsApp le llega su progreso («llevas X, te faltan Y»). En su cumpleaños tiene un <b>" + st.cfg.cumplePct + "% de descuento</b> y la app te avisa para felicitarlo." + (st.cfg.montoBonus>0 ? " Si compra por <b>" + montoTxt(st.cfg.montoBonus) + "</b> o más, dale una visita extra con el botón <b>Compra mayor</b> de su ficha." : "") + " Con el <b>Modo caja</b> abierto junto a la caja, la visita también se anota sola cuando el cliente escanea el código vivo.";
   var cerca = st.clientes.filter(function(c){ return premiosEf(c)>0 || (c.visitas>0 && faltaPara(c)<=2); })
     .sort(function(a,b){ return (premiosEf(b)-premiosEf(a)) || (faltaPara(a)-faltaPara(b)); }).slice(0,6);
   document.getElementById("cerca").innerHTML = cerca.length ? cerca.map(function(c){ return tarjetaCliente(c, hoy); }).join("") : '<p class="vacio">Todavía nadie está cerca de su recompensa.<br>Registra clientes y suma sus visitas.</p>';
@@ -810,6 +813,7 @@ document.getElementById("btn-reglas").addEventListener("click", function(){
   st.cfg.prod = document.getElementById("a-prod").value.trim();
   st.cfg.cumplePct = Math.max(0, parseInt(document.getElementById("a-cumple-pct").value,10) || 0);
   st.cfg.montoBonus = Math.max(0, parseInt(document.getElementById("a-monto").value,10) || 0);
+  st.cfg.minCompra = Math.max(0, parseInt(document.getElementById("a-minimo").value,10) || 0);
   guardar(); pintarTodo(); toast("Reglas guardadas");
 });
 document.getElementById("btn-nombre").addEventListener("click", function(){
@@ -879,6 +883,7 @@ function sincronizarAjustes(){
   document.getElementById("a-prod").value = st.cfg.prod || "";
   document.getElementById("a-cumple-pct").value = st.cfg.cumplePct;
   document.getElementById("a-monto").value = st.cfg.montoBonus || 0;
+  document.getElementById("a-minimo").value = st.cfg.minCompra || 0;
   document.getElementById("a-nombre").value = st.cfg.nombre;
   document.getElementById("a-resena").value = st.cfg.resenaUrl || "";
   document.getElementById("a-color").value = st.cfg.color;
