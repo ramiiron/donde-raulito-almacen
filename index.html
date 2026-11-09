@@ -310,6 +310,7 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
         <input id="n-cumple" type="date">
         <p class="ayuda" style="margin-top:8px">Con su fecha de nacimiento, la app avisa cuándo viene su cumpleaños para felicitarlo y aplicar su descuento.</p>
         <label class="consent-check"><input type="checkbox" id="n-consent"><span>El cliente autorizó guardar sus datos para el Club: nombre, teléfono y cumpleaños, solo para sus visitas y beneficios.</span></label>
+        <p class="ayuda" style="margin-top:8px">Al registrarlo a mano, su <b>primera visita queda anotada de inmediato</b>, porque está comprando ahora. Por eso el mensaje de bienvenida le confirma que ya quedó registrada.</p>
         <button class="btn bloque" id="btn-nuevo">Registrar cliente</button>
       </div>
       <div class="card ancho-form">
@@ -414,7 +415,7 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
             <p class="ayuda">Esto es lo que ve el cliente al abrir su tarjeta: su avance y su recompensa. Ojo: el QR impreso y la placa solo abren la tarjeta; desde la v18 la visita se anota con el código vivo del «Modo caja» o a mano desde la ficha del cliente.</p>
             <a class="btn sec bloque" href="cliente.html" target="_blank" rel="noopener" style="text-decoration:none">Ver la vista del cliente</a>
           </div>
-          <div class="card"><p class="ayuda"><b>Club en la nube (v20).</b> Los datos viven en la base propia del almacén y se comparten entre este panel y las tarjetas de los clientes. El panel pide ingreso con correo y contraseña, y las visitas de los clientes se anotan con el código rotativo del Modo caja. Los premios que un cliente gana en su tarjeta quedan «pendientes» y este panel los confirma solo al abrirse: un premio canjeado nunca se duplica. La compra mínima por visita se informa en la bienvenida y en la tarjeta del cliente.</p></div>
+          <div class="card"><p class="ayuda"><b>Club en la nube (v21).</b> Los datos viven en la base propia del almacén y se comparten entre este panel y las tarjetas de los clientes. El panel pide ingreso con correo y contraseña, y las visitas de los clientes se anotan con el código rotativo del Modo caja. Los premios que un cliente gana en su tarjeta quedan «pendientes» y este panel los confirma solo al abrirse: un premio canjeado nunca se duplica. La compra mínima por visita se informa en la bienvenida y en la tarjeta del cliente. Al registrar a un cliente a mano, su primera visita queda anotada al tiro.</p></div>
         </div>
       </div>
     </section>
@@ -781,10 +782,14 @@ document.getElementById("btn-nuevo").addEventListener("click", function(){
   var fonoOk = fonoCanonico(fono);
   if(!fonoOk){ toast("Ese teléfono no es válido (formato WhatsApp con código de país, ej: +56 9 XXXX XXXX)"); return; }
   if(!document.getElementById("n-consent").checked){ toast("Marca la autorización del cliente: hay que explicarle y que acepte"); return; }
-  st.clientes.push({id:uid(), nombre:nombre, telefono:fonoOk, cumple:cumple||"", visitas:0, visitasTotal:0, recompensas:0, ultima:"", consentimiento:true, consentFecha:hoyStr(), creado:hoyStr()});
+  // Registro a mano = el cliente está en el local comprando ahora mismo:
+  // su primera visita queda anotada al tiro (v21).
+  var v0 = 1, r0 = 0;
+  if(v0 >= st.cfg.meta){ v0 = 0; r0 = 1; }
+  st.clientes.push({id:uid(), nombre:nombre, telefono:fonoOk, cumple:cumple||"", visitas:v0, visitasTotal:1, recompensas:r0, ultima:hoyStr(), consentimiento:true, consentFecha:hoyStr(), creado:hoyStr()});
   guardar();
   document.getElementById("n-nombre").value = ""; document.getElementById("n-fono").value = ""; document.getElementById("n-cumple").value = ""; document.getElementById("n-consent").checked = false;
-  pintarTodo(); toast("Cliente registrado"); irA("clientes");
+  pintarTodo(); toast("Cliente registrado con su primera visita"); irA("clientes");
 });
 document.getElementById("btn-editar").addEventListener("click", function(){
   var id = document.getElementById("e-id").value; if(!id){ toast("Primero toca «Editar» en un cliente"); return; }
