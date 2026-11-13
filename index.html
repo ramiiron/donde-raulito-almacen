@@ -319,6 +319,7 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
       </div>
       <div style="height:16px"></div>
       <div id="lista-clientes"></div>
+      <div id="papelera-zona"></div>
     </section>
 
     <!-- REGISTRAR -->
@@ -347,7 +348,7 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
         </div>
         <label>Fecha de nacimiento</label><input id="e-cumple" type="date">
         <button class="btn sec bloque" id="btn-editar">Guardar cambios</button>
-        <button class="btn rojo bloque" id="btn-borrar">Borrar cliente</button>
+        <button class="btn rojo bloque" id="btn-borrar">Mover a la papelera</button>
       </div>
     </section>
 
@@ -426,6 +427,7 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
           </div>
           <div class="card">
             <h3>Respaldo y datos</h3>
+            <p class="ayuda" id="respaldo-estado" style="margin-bottom:4px"></p>
             <button class="btn sec bloque" id="btn-exportar">Exportar respaldo (archivo)</button>
             <button class="btn sec bloque" id="btn-salir" style="margin-top:10px">Cerrar sesión del panel</button>
             <label>Importar respaldo</label>
@@ -445,7 +447,7 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
             <p class="ayuda">Esto es lo que ve el cliente al abrir su tarjeta: su avance y su recompensa. Ojo: el QR impreso y la placa solo abren la tarjeta; desde la v18 la visita se anota con el código vivo del «Modo caja» o a mano desde la ficha del cliente.</p>
             <a class="btn sec bloque" href="cliente.html" target="_blank" rel="noopener" style="text-decoration:none">Ver la vista del cliente</a>
           </div>
-          <div class="card"><p class="ayuda"><b>Club en la nube (v22).</b> Los datos viven en la base propia del almacén y se comparten entre este panel y las tarjetas de los clientes. El panel pide ingreso con correo y contraseña, y las visitas de los clientes se anotan con el código rotativo del Modo caja. Los premios que un cliente gana en su tarjeta quedan «pendientes» y este panel los confirma solo al abrirse: un premio canjeado nunca se duplica. La compra mínima por visita se informa en la bienvenida y en la tarjeta del cliente. Al registrar a un cliente a mano, su primera visita queda anotada al tiro. Desde la v22, si algo falla la app muestra un aviso con botón para recargar en vez de quedar en blanco, una barra arriba avisa mientras el panel sincroniza con la nube, y los errores quedan registrados en Ajustes, sección «Errores de la app».</p></div>
+          <div class="card"><p class="ayuda"><b>Club en la nube (v23).</b> Los datos viven en la base propia del almacén y se comparten entre este panel y las tarjetas de los clientes. El panel pide ingreso con correo y contraseña, y las visitas de los clientes se anotan con el código rotativo del Modo caja. Los premios que un cliente gana en su tarjeta quedan «pendientes» y este panel los confirma solo al abrirse: un premio canjeado nunca se duplica. La compra mínima por visita se informa en la bienvenida y en la tarjeta del cliente. Al registrar a un cliente a mano, su primera visita queda anotada al tiro. Desde la v22, si algo falla la app muestra un aviso con botón para recargar en vez de quedar en blanco, una barra arriba avisa mientras el panel sincroniza con la nube, y los errores quedan registrados en Ajustes, sección «Errores de la app». Desde la v23, borrar una ficha la mueve a la <b>papelera</b> (al final de «Clientes»): sale del panel y de los avisos, pero se puede recuperar; el borrado definitivo se hace desde la misma papelera. Y en «Respaldo y datos» la app anota la fecha del último respaldo exportado y recuerda aquí cuando pasan 14 días sin exportar uno nuevo.</p></div>
         </div>
       </div>
     </section>
@@ -507,13 +509,14 @@ window.addEventListener("unhandledrejection", function(ev){
 <script>
 "use strict";
 var CLAVE = "raulito-club-v1";
-var cfgDef = {nombre:"Almacén Donde Raulito", meta:10, tipo:"descuento", pct:10, prod:"", cumplePct:10, color:"#1f6f43", diasInactivo:21, montoBonus:20000, minCompra:3000, resenaUrl:""};
+var cfgDef = {nombre:"Almacén Donde Raulito", meta:10, tipo:"descuento", pct:10, prod:"", cumplePct:10, color:"#1f6f43", diasInactivo:21, montoBonus:20000, minCompra:3000, resenaUrl:"", ultimoRespaldo:""};
 var st = cargar();
 if(!st.avisos) st.avisos = {};
 if(!st.camp) st.camp = {texto:"", ronda:""};
 if(!st.cfg.diasInactivo) st.cfg.diasInactivo = 21;
 if(st.cfg.montoBonus===undefined) st.cfg.montoBonus = 20000;
 if(st.cfg.minCompra===undefined) st.cfg.minCompra = 3000;
+if(st.cfg.ultimoRespaldo===undefined) st.cfg.ultimoRespaldo = "";
 
 function cargar(){
   try{ var d = JSON.parse(localStorage.getItem(CLAVE)); if(d && d.clientes && d.cfg) return d; }catch(e){}
@@ -548,6 +551,58 @@ function recompensaTxt(){
   return st.cfg.tipo==="producto" ? (st.cfg.prod ? st.cfg.prod : "un producto gratis") : ("un " + st.cfg.pct + "% de descuento en tu próxima compra");
 }
 function premiosEf(c){ return (c.recompensas || 0) + ((c.premiosIds || []).length); }
+/* ---------- papelera (v23) ----------
+   Borrar una ficha ya no destruye: la marca con papelera=true y la
+   fecha, y esa marca viaja en su documento de la nube, así que se
+   ve igual en todos los equipos. Los clientes en la papelera no
+   aparecen en las listas, ni en los avisos, ni en los conteos del
+   panel. Recuperar quita la marca; el borrado definitivo, desde la
+   misma papelera, sí elimina el documento para siempre (ese es el
+   que se usa cuando un cliente pide que borren sus datos). */
+function clientesActivos(){ return st.clientes.filter(function(c){ return !c.papelera; }); }
+function pintarPapelera(){
+  var zona = document.getElementById("papelera-zona"); if(!zona) return;
+  var papel = st.clientes.filter(function(c){ return c.papelera; });
+  if(!papel.length){ zona.innerHTML = ""; return; }
+  var h = '<div class="tit-sec" style="margin-top:30px">Papelera</div>';
+  h += '<p class="ayuda" style="max-width:760px;margin-bottom:12px">Estos clientes salieron del panel y de los avisos, pero su historial sigue guardado. <b>Recuperar</b> los devuelve tal como estaban. <b>Borrar definitivo</b> elimina sus datos para siempre, sin vuelta atrás: úsalo cuando un cliente pida que borren sus datos.</p>';
+  h += papel.map(function(c){
+    var f = '<div class="cliente"><div class="cli-top"><div class="avatar" style="background:' + colorAvatar(c.nombre) + '">' + esc(iniciales(c.nombre)) + '</div>';
+    f += '<div><div class="nom">' + esc(c.nombre) + '</div><div class="det">' + (c.telefono ? esc(fonoFmt(c.telefono)) : "Sin teléfono") + (c.borradoEn ? " · En la papelera desde el " + esc(c.borradoEn) : "") + '</div></div></div>';
+    f += '<p class="mini"><b>' + (c.visitasTotal || 0) + (c.visitasTotal===1 ? " visita" : " visitas") + '</b> en su historial</p>';
+    f += '<div class="fila"><button class="btn sm" onclick="recuperarCliente(\'' + c.id + '\')">Recuperar</button>';
+    f += '<button class="btn sm rojo" onclick="borrarDefinitivo(\'' + c.id + '\')">Borrar definitivo</button></div></div>';
+    return f;
+  }).join("");
+  zona.innerHTML = h;
+}
+function recuperarCliente(id){
+  var c = st.clientes.find(function(x){ return x.id===id; }); if(!c) return;
+  c.papelera = false; c.borradoEn = "";
+  guardar(); pintarTodo(); toast(c.nombre.split(" ")[0] + " volvió a la lista de clientes");
+}
+function borrarDefinitivo(id){
+  var c = st.clientes.find(function(x){ return x.id===id; }); if(!c) return;
+  if(!confirm("¿Borrar a " + c.nombre + " PARA SIEMPRE? Se elimina su historial completo, también de la nube, y no se puede recuperar.")) return;
+  st.clientes = st.clientes.filter(function(x){ return x.id!==id; });
+  guardar(); pintarTodo(); toast("Cliente borrado para siempre");
+}
+/* ---------- aviso de respaldo vencido (v23) ----------
+   La fecha del último respaldo viaja en la config compartida, así
+   que da lo mismo desde qué equipo se exportó: todos ven la misma
+   fecha. A los 14 días sin exportar, el panel lo recuerda arriba. */
+var RESPALDO_DIAS = 14;
+function diasDesdeRespaldo(){
+  if(!st.cfg.ultimoRespaldo) return null;
+  return diffDias(st.cfg.ultimoRespaldo, new Date());
+}
+function pintarAvisoRespaldo(){
+  var el = document.getElementById("respaldo-estado"); if(!el) return;
+  var d = diasDesdeRespaldo();
+  if(d === null){ el.innerHTML = "Todavía no se exportó ningún respaldo desde esta versión. Exporta el primero con el botón de abajo y guarda el archivo en un lugar seguro."; return; }
+  if(d >= RESPALDO_DIAS){ el.innerHTML = "<b>El último respaldo fue hace " + d + " días</b> (" + esc(st.cfg.ultimoRespaldo) + "). Exporta uno nuevo con el botón de abajo: es la copia de seguridad de todos los clientes del Club."; return; }
+  el.innerHTML = "Último respaldo: hace " + (d===0 ? "menos de un día" : d + (d===1 ? " día" : " días")) + " (" + esc(st.cfg.ultimoRespaldo) + "). La app te recuerda aquí cuando pasen " + RESPALDO_DIAS + " días sin exportar.";
+}
 function fonoCanonico(fono){
   // Chileno: se completa a 569XXXXXXXX. Otros países: formato WhatsApp completo
   // (código de país + número, 10 a 15 dígitos), se guarda tal cual en dígitos.
@@ -603,6 +658,7 @@ function generarAvisos(hoy){
   var hs = hoyStr();
   var out = [];
   st.clientes.forEach(function(c){
+    if(c.papelera) return;
     var dC = c.cumple ? diasParaCumple(c.cumple, hoy) : null;
     if(premiosEf(c)>0) out.push({c:c, tipo:"recompensa", clave:c.id+"|recompensa|"+c.visitasTotal, mensaje:msgProgreso(c)});
     if(dC===0) out.push({c:c, tipo:"cumplehoy", clave:c.id+"|cumplehoy|"+anioProxCumple(c.cumple, hoy), mensaje:msgCumple(c)});
@@ -662,7 +718,7 @@ function aplicarPlantilla(t, c){
 function claveCamp(c){ return c.id + "|camp|" + st.camp.ronda; }
 function pintarCampana(){
   var cont = document.getElementById("camp-lista"); if(!cont) return;
-  var clientes = st.clientes.slice().sort(function(a,b){ return a.nombre.localeCompare(b.nombre); });
+  var clientes = clientesActivos().slice().sort(function(a,b){ return a.nombre.localeCompare(b.nombre); });
   var hechos = clientes.filter(function(c){ return !!st.avisos[claveCamp(c)]; }).length;
   document.getElementById("camp-progreso").innerHTML = clientes.length
     ? ("<b>" + hechos + " de " + clientes.length + "</b> clientes avisados en esta ronda.")
@@ -799,24 +855,25 @@ function pintarTodo(){
 }
 function pintarTodoSeguro(){
   var hoy = new Date();
+  var activos = clientesActivos();
   document.getElementById("h-nombre").textContent = st.cfg.nombre;
   var lat = document.getElementById("h-nombre-lat"); if(lat) lat.textContent = st.cfg.nombre;
   var visitasHoy = 0;
-  st.clientes.forEach(function(c){ if(c.ultima===hoyStr()) visitasHoy++; });
-  var listas = st.clientes.reduce(function(a,c){ return a + (premiosEf(c)>0?1:0); }, 0);
-  var cumples = ordenarCumples(st.clientes, hoy);
-  document.getElementById("s-clientes").textContent = st.clientes.length;
+  activos.forEach(function(c){ if(c.ultima===hoyStr()) visitasHoy++; });
+  var listas = activos.reduce(function(a,c){ return a + (premiosEf(c)>0?1:0); }, 0);
+  var cumples = ordenarCumples(activos, hoy);
+  document.getElementById("s-clientes").textContent = activos.length;
   document.getElementById("s-visitas-hoy").textContent = visitasHoy;
   document.getElementById("s-listas").textContent = listas;
   document.getElementById("s-cumples").textContent = cumples.filter(function(x){ return x.dias<=7; }).length;
   document.getElementById("como-funciona").innerHTML = "Cada vez que un cliente registrado compra, tocas <b>+ Visita</b> en su ficha. Al juntar <b>" + st.cfg.meta + " visitas</b> gana <b>" + esc(recompensaTxt()) + "</b>." + (st.cfg.minCompra>0 ? " La visita cuenta con compras desde <b>" + montoTxt(st.cfg.minCompra) + "</b>." : "") + " Con el botón WhatsApp le llega su progreso («llevas X, te faltan Y»). En su cumpleaños tiene un <b>" + st.cfg.cumplePct + "% de descuento</b> y la app te avisa para felicitarlo." + (st.cfg.montoBonus>0 ? " Si compra por <b>" + montoTxt(st.cfg.montoBonus) + "</b> o más, dale una visita extra con el botón <b>Compra mayor</b> de su ficha." : "") + " Con el <b>Modo caja</b> abierto junto a la caja, la visita también se anota sola cuando el cliente escanea el código vivo.";
-  var cerca = st.clientes.filter(function(c){ return premiosEf(c)>0 || (c.visitas>0 && faltaPara(c)<=2); })
+  var cerca = activos.filter(function(c){ return premiosEf(c)>0 || (c.visitas>0 && faltaPara(c)<=2); })
     .sort(function(a,b){ return (premiosEf(b)-premiosEf(a)) || (faltaPara(a)-faltaPara(b)); }).slice(0,6);
   document.getElementById("cerca").innerHTML = cerca.length ? cerca.map(function(c){ return tarjetaCliente(c, hoy); }).join("") : '<p class="vacio">Todavía nadie está cerca de su recompensa.<br>Registra clientes y suma sus visitas.</p>';
   var c7 = cumples.filter(function(x){ return x.dias<=7; });
   document.getElementById("cumples-inicio").innerHTML = c7.length ? c7.map(function(x){ return tarjetaCliente(x.c, hoy); }).join("") : '<p class="vacio">Sin cumpleaños en los próximos 7 días.</p>';
   var q = (document.getElementById("buscar").value || "").toLowerCase();
-  var lista = st.clientes.filter(function(c){ return !q || c.nombre.toLowerCase().indexOf(q)>=0 || String(c.telefono).indexOf(q)>=0; })
+  var lista = activos.filter(function(c){ return !q || c.nombre.toLowerCase().indexOf(q)>=0 || String(c.telefono).indexOf(q)>=0; })
     .slice().sort(function(a,b){ return a.nombre.localeCompare(b.nombre); });
   var vacioMsg = q ? "Ningún cliente coincide con esa búsqueda." : "Aún no hay clientes registrados.<br>Registra el primero en «Registrar cliente».";
   document.getElementById("lista-clientes").innerHTML = lista.length
@@ -832,6 +889,8 @@ function pintarTodoSeguro(){
       return h;
     }).join("") : '<p class="vacio">Sin cumpleaños en los próximos 30 días.</p>';
   pintarAvisos(hoy);
+  pintarPapelera();
+  pintarAvisoRespaldo();
 }
 function irA(v){
   document.querySelectorAll(".vista").forEach(function(s){ s.classList.toggle("activa", s.id==="v-"+v); });
@@ -876,9 +935,9 @@ document.getElementById("btn-editar").addEventListener("click", function(){
 document.getElementById("btn-borrar").addEventListener("click", function(){
   var id = document.getElementById("e-id").value; if(!id){ toast("Primero toca «Editar» en un cliente"); return; }
   var c = st.clientes.find(function(x){ return x.id===id; }); if(!c) return;
-  if(!confirm("¿Borrar a " + c.nombre + "? Se pierde su historial de visitas.")) return;
-  st.clientes = st.clientes.filter(function(x){ return x.id!==id; });
-  document.getElementById("e-id").value = ""; guardar(); pintarTodo(); toast("Cliente borrado"); irA("clientes");
+  if(!confirm("¿Mover a " + c.nombre + " a la papelera? Sale del panel y de los avisos, pero su historial queda guardado y puedes recuperarlo desde la papelera, al final de «Clientes».")) return;
+  c.papelera = true; c.borradoEn = hoyStr();
+  document.getElementById("e-id").value = ""; guardar(); pintarTodo(); toast("Cliente en la papelera, recuperable cuando quieras"); irA("clientes");
 });
 document.getElementById("btn-reglas").addEventListener("click", function(){
   st.cfg.meta = Math.max(1, parseInt(document.getElementById("a-meta").value,10) || 10);
@@ -908,6 +967,8 @@ document.getElementById("btn-exportar").addEventListener("click", function(){
   var blob = new Blob([JSON.stringify(st, null, 2)], {type:"application/json"});
   var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "club-raulito-respaldo.json"; a.click();
   setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+  st.cfg.ultimoRespaldo = hoyStr(); guardar(); pintarTodo();
+  toast("Respaldo exportado. La fecha quedó anotada para todo el equipo.");
 });
 document.getElementById("imp").addEventListener("change", function(ev){
   var f = ev.target.files[0]; if(!f) return;
@@ -990,11 +1051,11 @@ function esDemoC(c){
 function canonObj(o){ var r = {}; Object.keys(o).sort().forEach(function(k){ r[k] = o[k]; }); return JSON.stringify(r); }
 function docDeCliente(c){
   return {nombre:c.nombre, telefono:c.telefono, cumple:c.cumple || "", visitas:c.visitas || 0, visitasTotal:c.visitasTotal || 0,
-          recompensas:c.recompensas || 0, premiosIds:(c.premiosIds || []).slice(), creado:c.creado || "", ultima:c.ultima || "", bonus:c.bonus || 0, ultimoBonus:c.ultimoBonus || "", consentimiento:!!c.consentimiento, consentFecha:c.consentFecha || ""};
+          recompensas:c.recompensas || 0, premiosIds:(c.premiosIds || []).slice(), creado:c.creado || "", ultima:c.ultima || "", bonus:c.bonus || 0, ultimoBonus:c.ultimoBonus || "", consentimiento:!!c.consentimiento, consentFecha:c.consentFecha || "", papelera:!!c.papelera, borradoEn:c.borradoEn || ""};
 }
 function clienteDeDoc(id, d){
   return {id:id, nombre:d.nombre || "", telefono:id, cumple:d.cumple || "", visitas:d.visitas || 0, visitasTotal:d.visitasTotal || 0,
-          recompensas:d.recompensas || 0, premiosIds:(Array.isArray(d.premiosIds) ? d.premiosIds.slice() : []), creado:d.creado || "", ultima:d.ultima || "", bonus:d.bonus || 0, ultimoBonus:d.ultimoBonus || "", consentimiento:!!d.consentimiento, consentFecha:d.consentFecha || ""};
+          recompensas:d.recompensas || 0, premiosIds:(Array.isArray(d.premiosIds) ? d.premiosIds.slice() : []), creado:d.creado || "", ultima:d.ultima || "", bonus:d.bonus || 0, ultimoBonus:d.ultimoBonus || "", consentimiento:!!d.consentimiento, consentFecha:d.consentFecha || "", papelera:!!d.papelera, borradoEn:d.borradoEn || ""};
 }
 function guardarLocalP(){ try{ localStorage.setItem(CLAVE, JSON.stringify(st)); }catch(e){} }
 /* Doblado de premios (v19): los premios que una tarjeta gana quedan como
