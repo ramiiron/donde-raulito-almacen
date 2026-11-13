@@ -61,9 +61,19 @@ input:focus{border-color:var(--p);box-shadow:0 0 0 3px var(--p-suave)}
 @keyframes pop{0%{transform:scale(.6)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
 .pop{animation:pop .45s ease}
 .marca img{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit}
+#red-seguridad{position:fixed;inset:0;z-index:4000;background:var(--fondo);display:none;align-items:center;justify-content:center;padding:20px}
+#red-seguridad.ver{display:flex}
+#red-seguridad .caja-error{background:#fff;border:1px solid var(--borde);border-radius:18px;box-shadow:0 18px 44px -18px rgba(27,26,23,.35);max-width:400px;width:100%;padding:28px 24px;text-align:center}
+#red-seguridad h2{font-family:"Newsreader",Georgia,serif;font-size:24px;font-weight:600;margin-bottom:6px}
+#red-seguridad p{color:var(--mut);font-size:14px;line-height:1.55}
 </style>
 </head>
 <body>
+<div id="red-seguridad"><div class="caja-error">
+  <h2>Algo falló al cargar tu tarjeta</h2>
+  <p>Tu tarjeta y tus visitas están guardadas. Toca el botón para recargar. Si el problema sigue, avisa en el mesón: el error quedó registrado para el almacén.</p>
+  <button class="btn" onclick="location.reload()">Recargar mi tarjeta</button>
+</div></div>
 <div class="tel">
   <div class="cab">
     <div class="marca"><img src="icons/logo.png" alt="Club Donde Raulito"></div>
@@ -114,6 +124,37 @@ input:focus{border-color:var(--p);box-shadow:0 0 0 3px var(--p-suave)}
   <p class="pie">Almacén Donde Raulito · Av. El Descanso, Maipú<br>Club de Clientes</p>
 </div>
 
+<script>
+/* ===== v22 · Red de seguridad y registro de errores =====
+   Va PRIMERO: si un script posterior falla, la tarjeta no queda en
+   blanco. Muestra un aviso con botón para recargar y deja el error
+   en la misma cola local que lee el panel («raulito-errores-v1»,
+   mismo origen), para que el almacén lo suba a su registro. */
+var ERRORES_CLAVE_C = "raulito-errores-v1";
+function registrarErrorC(donde, detalle){
+  try{
+    var lista = [];
+    try{ var d = JSON.parse(localStorage.getItem(ERRORES_CLAVE_C)); if(Array.isArray(d)) lista = d; }catch(e){}
+    var txt = String(detalle == null ? "" : detalle).slice(0, 300);
+    var ultimo = lista[lista.length - 1];
+    if(ultimo && ultimo.donde === donde && ultimo.detalle === txt && (Date.now() - (ultimo.ts || 0)) < 60000) return;
+    lista.push({donde:String(donde || "tarjeta"), detalle:txt, ts:Date.now(), app:"tarjeta-v22"});
+    localStorage.setItem(ERRORES_CLAVE_C, JSON.stringify(lista.slice(-30)));
+    if(typeof subirErroresC === "function") subirErroresC();
+  }catch(e){}
+}
+window.__clubSaludableC = false;
+window.addEventListener("error", function(ev){
+  try{
+    registrarErrorC("tarjeta", (ev && ev.message) || (ev && ev.error && ev.error.message) || "error desconocido");
+    var red = document.getElementById("red-seguridad");
+    if(!window.__clubSaludableC && red) red.classList.add("ver");
+  }catch(e){}
+}, true);
+window.addEventListener("unhandledrejection", function(ev){
+  try{ var r = ev && ev.reason; registrarErrorC("tarjeta (promesa)", (r && r.message) || String(r || "promesa rechazada")); }catch(e){}
+});
+</script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -199,6 +240,10 @@ setTimeout(function(){ codigoListo = true; syncListo = true; quizasResolverTap()
 
 /* ---------- pintura ---------- */
 function pintar(){
+  try{ pintarSeguro(); window.__clubSaludableC = true; var redOk = document.getElementById("red-seguridad"); if(redOk) redOk.classList.remove("ver"); }
+  catch(e){ registrarErrorC("tarjeta: pintar", (e && e.message) || String(e)); var red = document.getElementById("red-seguridad"); if(red) red.classList.add("ver"); }
+}
+function pintarSeguro(){
   document.getElementById("v-registro").classList.toggle("oculto", !!yo);
   document.getElementById("v-socio").classList.toggle("oculto", !yo);
   if(!yo){
@@ -314,6 +359,7 @@ document.getElementById("btn-mostrar").addEventListener("click", function(){
   alert("Muestra esta pantalla en caja: el vendedor verá tu nombre y tus visitas, y podrá canjear tu recompensa si tienes una.");
 });
 pintar();
+setTimeout(function(){ window.__clubSaludableC = true; var red = document.getElementById("red-seguridad"); if(red) red.classList.remove("ver"); }, 6000);
 </script>
 
 <script>
@@ -329,6 +375,29 @@ var FIREBASE_CONFIG = {
   appId: "1:1066165996738:web:40ab03ab3b15043db53f5b"
 };
 var nubeDbC = null, nubeOnC = false, nubeAplicandoC = false, nubeTimerC = null, nubeSubC = "";
+/* ---------- v22: subir la cola de errores a la nube ----------
+   La tarjeta intenta subir los errores de la cola local a
+   raulito_club_errores (crear es lo único que necesita). Si las
+   reglas de esa colección aún no se publican, la subida falla en
+   silencio y la cola queda en los equipos hasta que el panel,
+   con su propia sesión, la suba. */
+var erroresSubiendoC = false;
+function subirErroresC(){
+  if(erroresSubiendoC || !nubeOnC || !nubeDbC) return;
+  var lista = [];
+  try{ var d = JSON.parse(localStorage.getItem(ERRORES_CLAVE_C)); if(Array.isArray(d)) lista = d; }catch(e){}
+  if(!lista.length) return;
+  erroresSubiendoC = true;
+  var batch = nubeDbC.batch();
+  lista.forEach(function(er, i){
+    var id = "e" + (er.ts || Date.now()) + "-" + i + "-" + Math.random().toString(36).slice(2, 6);
+    batch.set(nubeDbC.collection("raulito_club_errores").doc(id), {donde:er.donde || "", detalle:er.detalle || "", ts:er.ts || Date.now(), app:er.app || ""});
+  });
+  batch.commit().then(function(){
+    erroresSubiendoC = false;
+    try{ localStorage.setItem(ERRORES_CLAVE_C, "[]"); }catch(e){}
+  }).catch(function(){ erroresSubiendoC = false; });
+}
 function recompensaDeCfg(cfg){
   if(cfg.tipo === "producto") return cfg.prod ? cfg.prod : "un producto gratis";
   return "un " + (cfg.pct || 10) + "% de descuento en tu próxima compra";
@@ -411,7 +480,7 @@ function nubeSincronizarYo(){
         yo.recompensas = (yo.recompensas || 0) + (yo.premiosLocales || []).length;
         yo.premiosLocales = []; yo.premiosNube = [];
         guardar();
-      }).catch(function(){});
+      }).catch(function(err){ registrarErrorC("tarjeta: crear registro", (err && err.code) || (err && err.message) || "error al crear"); });
     } else {
       // «empujar» (v19): esta tarjeta SOLO escribe sus contadores (cuando
       // va adelante) y sus premios pendientes como ids. Nunca escribe
@@ -431,10 +500,10 @@ function nubeSincronizarYo(){
           guardar();
         }));
       }
-      if(escrituras.length) Promise.all(escrituras).catch(function(){});
+      if(escrituras.length) Promise.all(escrituras).catch(function(err){ registrarErrorC("tarjeta: empujar visitas", (err && err.code) || (err && err.message) || "error al empujar"); });
     }
     syncListo = true; quizasResolverTap();
-  }).catch(function(){ syncListo = true; quizasResolverTap(); });
+  }).catch(function(err){ registrarErrorC("tarjeta: leer registro", (err && err.code) || (err && err.message) || "error al leer"); syncListo = true; quizasResolverTap(); });
 }
 var _guardarC = guardar;
 guardar = function(){ _guardarC(); if(nubeTimerC) clearTimeout(nubeTimerC); nubeTimerC = setTimeout(nubeSincronizarYo, 900); };
@@ -453,8 +522,9 @@ function nubeInitC(){
       }, function(){ codigoListo = true; quizasResolverTap(); });
       if(!yo){ syncListo = true; quizasResolverTap(); }
       if(yo && yo.telefono) nubeSincronizarYo();
-    }).catch(function(){});
-  }catch(e){}
+      subirErroresC();
+    }).catch(function(err){ registrarErrorC("tarjeta: ingreso anónimo", (err && err.code) || (err && err.message) || "error de ingreso"); });
+  }catch(e){ registrarErrorC("tarjeta: inicio de la nube", (e && e.message) || String(e)); }
 }
 nubeInitC();
 </script>
