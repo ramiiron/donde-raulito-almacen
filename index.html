@@ -198,9 +198,32 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
 }
 @media (min-width:960px){ .solo-movil{display:none} }
 .marca img{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit}
+
+/* ===== v22: red de seguridad, sincronización y errores ===== */
+#red-seguridad{position:fixed;inset:0;z-index:4000;background:var(--fondo);display:none;align-items:center;justify-content:center;padding:20px}
+#red-seguridad.ver{display:flex}
+#red-seguridad .caja-error{background:#fff;border:1px solid var(--borde);border-radius:18px;box-shadow:0 18px 44px -18px rgba(27,26,23,.35);max-width:400px;width:100%;padding:28px 24px;text-align:center}
+#red-seguridad h2{font-family:"Newsreader",Georgia,serif;font-size:24px;font-weight:600;margin-bottom:6px}
+#red-seguridad p{color:var(--mut);font-size:14px;line-height:1.55}
+.sync-bar{display:none;align-items:center;gap:9px;background:#fdf3e0;color:#7c5410;border:1px solid #ecd9ac;border-radius:11px;padding:9px 13px;font-size:13px;font-weight:600;margin-bottom:16px}
+.sync-bar.ver{display:flex}
+.sync-bar.ok{background:var(--p-suave);color:var(--p-osc);border-color:#cfe3d4}
+.sync-bar.mal{background:#fdeeee;color:#8c2f22;border-color:#ecc7c3}
+.sync-punto{width:9px;height:9px;border-radius:50%;background:currentColor;flex:none;animation:syncpulso 1s ease-in-out infinite}
+.sync-bar.ok .sync-punto,.sync-bar.mal .sync-punto{animation:none}
+@keyframes syncpulso{0%,100%{opacity:.35}50%{opacity:1}}
+.error-item{border-bottom:1px solid #f0ece1;padding:10px 0;font-size:13px;line-height:1.5}
+.error-item:last-child{border-bottom:none}
+.error-item .cuando{color:var(--mut);font-size:12px}
+.error-item .donde{font-weight:650}
 </style>
 </head>
 <body>
+<div id="red-seguridad"><div class="caja-error">
+  <h2>Algo falló al cargar el panel</h2>
+  <p>Tus datos están guardados y no se perdió nada. Toca el botón para recargar. Si el problema sigue, avísale a Ramiro: el error quedó registrado en el panel, en Ajustes, sección Errores de la app.</p>
+  <button class="btn bloque" onclick="location.reload()">Recargar el panel</button>
+</div></div>
 <div id="v-login">
   <div class="login-card">
     <img src="icons/logo.png" alt="Club Donde Raulito">
@@ -246,6 +269,7 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
     </div></div>
 
     <div class="wrap">
+    <div class="sync-bar" id="sync-bar"><span class="sync-punto"></span><span id="sync-txt">Conectando con la nube…</span></div>
     <!-- INICIO -->
     <section id="v-inicio" class="vista activa">
       <div class="page-head"><h2>Panel general</h2><p>El pulso de tu club de clientes, de un vistazo.</p></div>
@@ -411,11 +435,17 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
             <button class="btn rojo bloque" id="btn-borrar-todo">Borrar todos los datos</button>
           </div>
           <div class="card">
+            <h3>Errores de la app</h3>
+            <p class="ayuda">Si algo falla en el panel o en la tarjeta de un cliente, el error queda registrado aquí solo, sin que nadie tenga que avisar. Solo se ven con una cuenta del panel.</p>
+            <div id="errores-lista"><p class="ayuda" style="margin-top:8px">Cargando…</p></div>
+            <button class="btn gris bloque" id="btn-errores-borrar">Borrar el registro de errores</button>
+          </div>
+          <div class="card">
             <h3>Vista del cliente (NFC / QR)</h3>
             <p class="ayuda">Esto es lo que ve el cliente al abrir su tarjeta: su avance y su recompensa. Ojo: el QR impreso y la placa solo abren la tarjeta; desde la v18 la visita se anota con el código vivo del «Modo caja» o a mano desde la ficha del cliente.</p>
             <a class="btn sec bloque" href="cliente.html" target="_blank" rel="noopener" style="text-decoration:none">Ver la vista del cliente</a>
           </div>
-          <div class="card"><p class="ayuda"><b>Club en la nube (v21).</b> Los datos viven en la base propia del almacén y se comparten entre este panel y las tarjetas de los clientes. El panel pide ingreso con correo y contraseña, y las visitas de los clientes se anotan con el código rotativo del Modo caja. Los premios que un cliente gana en su tarjeta quedan «pendientes» y este panel los confirma solo al abrirse: un premio canjeado nunca se duplica. La compra mínima por visita se informa en la bienvenida y en la tarjeta del cliente. Al registrar a un cliente a mano, su primera visita queda anotada al tiro.</p></div>
+          <div class="card"><p class="ayuda"><b>Club en la nube (v22).</b> Los datos viven en la base propia del almacén y se comparten entre este panel y las tarjetas de los clientes. El panel pide ingreso con correo y contraseña, y las visitas de los clientes se anotan con el código rotativo del Modo caja. Los premios que un cliente gana en su tarjeta quedan «pendientes» y este panel los confirma solo al abrirse: un premio canjeado nunca se duplica. La compra mínima por visita se informa en la bienvenida y en la tarjeta del cliente. Al registrar a un cliente a mano, su primera visita queda anotada al tiro. Desde la v22, si algo falla la app muestra un aviso con botón para recargar en vez de quedar en blanco, una barra arriba avisa mientras el panel sincroniza con la nube, y los errores quedan registrados en Ajustes, sección «Errores de la app».</p></div>
         </div>
       </div>
     </section>
@@ -435,6 +465,41 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
 </nav></div>
 <div id="toast"></div>
 
+<script>
+/* ===== v22 · Red de seguridad y registro de errores =====
+   Este bloque va PRIMERO a propósito: si cualquier script posterior
+   falla al cargar o al dibujar, el panel no queda en blanco. Muestra
+   un aviso con botón para recargar y deja el error anotado en la
+   cola local «raulito-errores-v1»; la nube lo recoge cuando el panel
+   logra conectar (colección raulito_club_errores, solo panel). */
+var ERRORES_CLAVE_P = "raulito-errores-v1";
+function erroresLeerP(){ try{ var d = JSON.parse(localStorage.getItem(ERRORES_CLAVE_P)); return Array.isArray(d) ? d : []; }catch(e){ return []; } }
+function erroresGuardarP(lista){ try{ localStorage.setItem(ERRORES_CLAVE_P, JSON.stringify(lista.slice(-30))); }catch(e){} }
+function registrarErrorP(donde, detalle){
+  var lista = erroresLeerP();
+  var txt = String(detalle == null ? "" : detalle).slice(0, 300);
+  var ultimo = lista[lista.length - 1];
+  if(ultimo && ultimo.donde === donde && ultimo.detalle === txt && (Date.now() - (ultimo.ts || 0)) < 60000) return;
+  lista.push({donde:String(donde || "panel"), detalle:txt, ts:Date.now(), app:"panel-v22"});
+  erroresGuardarP(lista);
+  if(typeof subirErroresP === "function") subirErroresP();
+}
+window.__clubSaludableP = false;
+window.addEventListener("error", function(ev){
+  try{
+    var detalle = (ev && ev.message) || (ev && ev.error && ev.error.message) || "error desconocido";
+    registrarErrorP("panel", detalle);
+    var red = document.getElementById("red-seguridad");
+    if(!window.__clubSaludableP && red) red.classList.add("ver");
+  }catch(e){}
+}, true);
+window.addEventListener("unhandledrejection", function(ev){
+  try{
+    var r = ev && ev.reason;
+    registrarErrorP("panel (promesa)", (r && r.message) || String(r || "promesa rechazada"));
+  }catch(e){}
+});
+</script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -729,6 +794,10 @@ function tablaClientes(lista, hoy){
   return h + '</tbody></table></div>';
 }
 function pintarTodo(){
+  try{ pintarTodoSeguro(); window.__clubSaludableP = true; var redOk = document.getElementById("red-seguridad"); if(redOk) redOk.classList.remove("ver"); }
+  catch(e){ if(typeof registrarErrorP === "function") registrarErrorP("panel: pintar", (e && e.message) || String(e)); var red = document.getElementById("red-seguridad"); if(red) red.classList.add("ver"); }
+}
+function pintarTodoSeguro(){
   var hoy = new Date();
   document.getElementById("h-nombre").textContent = st.cfg.nombre;
   var lat = document.getElementById("h-nombre-lat"); if(lat) lat.textContent = st.cfg.nombre;
@@ -894,6 +963,7 @@ function sincronizarAjustes(){
   document.getElementById("a-color").value = st.cfg.color;
 }
 sincronizarAjustes(); aplicarColor(); pintarTodo();
+setTimeout(function(){ window.__clubSaludableP = true; var red = document.getElementById("red-seguridad"); if(red) red.classList.remove("ver"); }, 6000);
 if("serviceWorker" in navigator){ navigator.serviceWorker.register("sw.js").catch(function(){}); }
 </script>
 
@@ -944,7 +1014,7 @@ function doblarPremiosPendientes(lista){
         if(!ids.length) return;
         tx.update(ref, {recompensas:(d.recompensas || 0) + ids.length, premiosIds:[]});
       });
-    }).catch(function(){});
+    }).catch(function(err){ registrarErrorP("panel: doblar premios", (err && err.message) || String(err || "")); });
   });
 }
 function pintarEstadoNubeP(){
@@ -972,10 +1042,77 @@ function sincronizarNubeP(){
     batch.set(nubeDbP.collection("raulito_club_config").doc("app"), JSON.parse(cfgCn));
     nubeCfgJsonP = cfgCn; cambios++;
   }
-  if(cambios) batch.commit().catch(function(){});
+  if(cambios) batch.commit().then(function(){
+    if(syncPrimeraFotoP) syncBarP("ok", "Cambios guardados en la nube.");
+  }).catch(function(err){ syncMalP((err && err.message) || "error al guardar en la nube"); });
 }
 var _guardarP = guardar;
 guardar = function(){ _guardarP(); if(nubeTimerP) clearTimeout(nubeTimerP); nubeTimerP = setTimeout(sincronizarNubeP, 1200); };
+/* ---------- v22: barra de sincronización ----------
+   Mientras la nube no entrega su primera foto, la barra avisa
+   «Conectando…» sobre los datos locales, para que «cargando» nunca
+   se confunda con «cero clientes». Al llegar la primera foto, dice
+   «Sincronizado» y se esconde sola. Si la nube falla, avisa en rojo
+   y el error queda registrado. */
+var syncPrimeraFotoP = false, syncOkTimerP = null;
+function syncBarP(estado, txt){
+  var bar = document.getElementById("sync-bar"); if(!bar) return;
+  var t = document.getElementById("sync-txt");
+  if(t) t.textContent = txt;
+  bar.classList.toggle("ok", estado === "ok");
+  bar.classList.toggle("mal", estado === "mal");
+  bar.classList.add("ver");
+  if(syncOkTimerP) clearTimeout(syncOkTimerP);
+  if(estado === "ok") syncOkTimerP = setTimeout(function(){ bar.classList.remove("ver"); }, 3200);
+}
+function syncMalP(detalle){
+  syncBarP("mal", "Sin conexión con la nube por ahora. Sigues viendo los datos guardados en este equipo, y todo se comparte apenas vuelva la conexión.");
+  registrarErrorP("panel: nube", detalle || "falló la conexión con la nube");
+}
+/* ---------- v22: errores, cola local y nube ----------
+   La cola vive en localStorage (la llena la red de seguridad, en
+   esta página y en la tarjeta del cliente, que comparten origen).
+   Al conectar, el panel la sube a raulito_club_errores y la lista
+   en Ajustes. Si las reglas de esa colección aún no se publican,
+   la subida falla en silencio y la cola queda en el equipo. */
+var erroresSubiendoP = false;
+function subirErroresP(){
+  if(erroresSubiendoP || !nubeOnP || !nubeDbP) return;
+  var lista = (typeof erroresLeerP === "function") ? erroresLeerP() : [];
+  if(!lista.length) return;
+  erroresSubiendoP = true;
+  var batch = nubeDbP.batch();
+  lista.forEach(function(er, i){
+    var id = "e" + (er.ts || Date.now()) + "-" + i + "-" + Math.random().toString(36).slice(2, 6);
+    batch.set(nubeDbP.collection("raulito_club_errores").doc(id), {donde:er.donde || "", detalle:er.detalle || "", ts:er.ts || Date.now(), app:er.app || ""});
+  });
+  batch.commit().then(function(){
+    erroresSubiendoP = false;
+    if(typeof erroresGuardarP === "function") erroresGuardarP([]);
+  }).catch(function(){ erroresSubiendoP = false; });
+}
+function pintarErroresP(docs){
+  var cont = document.getElementById("errores-lista"); if(!cont) return;
+  if(!docs.length){ cont.innerHTML = '<p class="ayuda" style="margin-top:8px">Sin errores registrados. Cuando algo falle, aparece aquí solo.</p>'; return; }
+  cont.innerHTML = docs.map(function(d){
+    var f = new Date(d.ts || 0);
+    var cuando = isNaN(f.getTime()) ? "" : f.toLocaleDateString("es-CL") + " " + String(f.getHours()).padStart(2, "0") + ":" + String(f.getMinutes()).padStart(2, "0");
+    return '<div class="error-item"><span class="donde">' + esc(d.donde || "app") + '</span> <span class="cuando">' + esc(cuando) + (d.app ? " · " + esc(d.app) : "") + '</span><br>' + esc(d.detalle || "") + '</div>';
+  }).join("");
+}
+var _btnErrBorrar = document.getElementById("btn-errores-borrar");
+if(_btnErrBorrar) _btnErrBorrar.addEventListener("click", function(){
+  if(!nubeDbP){ toast("Sin conexión con la nube por ahora"); return; }
+  if(!confirm("¿Borrar el registro de errores? Es solo el historial de fallas, no toca a los clientes.")) return;
+  nubeDbP.collection("raulito_club_errores").get().then(function(qs){
+    var batch = nubeDbP.batch();
+    qs.forEach(function(doc){ batch.delete(doc.ref); });
+    return batch.commit();
+  }).then(function(){
+    if(typeof erroresGuardarP === "function") erroresGuardarP([]);
+    pintarErroresP([]); toast("Registro de errores borrado");
+  }).catch(function(){ toast("No se pudo borrar, revisa la conexión"); });
+});
 function nubeInitP(){
   if(typeof firebase === "undefined"){ pintarEstadoNubeP(); return; }
   try{
@@ -985,6 +1122,12 @@ function nubeInitP(){
       if(panelNubeIniciada) return; panelNubeIniciada = true;
       var g = document.getElementById("v-login"); if(g) g.style.display = "none";
       nubeDbP = firebase.firestore(); nubeOnP = true; pintarEstadoNubeP();
+      syncBarP("", "Conectando con la nube…");
+      subirErroresP();
+      nubeDbP.collection("raulito_club_errores").orderBy("ts", "desc").limit(30).onSnapshot(function(qs){
+        var docs = []; qs.forEach(function(doc){ docs.push(doc.data()); });
+        pintarErroresP(docs);
+      }, function(){ pintarErroresP((typeof erroresLeerP === "function") ? erroresLeerP().slice().reverse() : []); });
       nubeLocalesPrevios = st.clientes.filter(function(c){ return !esDemoC(c) && c.telefono; });
       nubeDbP.collection("raulito_club_config").doc("app").onSnapshot(function(doc){
         if(!doc.exists){
@@ -999,7 +1142,7 @@ function nubeInitP(){
           st.cfg = fusion; guardarLocalP(); sincronizarAjustes(); aplicarColor(); pintarTodo();
           nubeAplicandoP = false;
         }
-      }, function(){});
+      }, function(err){ syncMalP((err && err.message) || "error al escuchar la configuración"); });
       nubeDbP.collection("raulito_club_clientes").onSnapshot(function(qs){
         var lista = []; var sync = {};
         qs.forEach(function(doc){ var c = clienteDeDoc(doc.id, doc.data()); lista.push(c); sync[doc.id] = canonObj(docDeCliente(c)); });
@@ -1019,7 +1162,8 @@ function nubeInitP(){
         st.clientes = lista.concat(demos);
         guardarLocalP(); pintarTodo();
         nubeAplicandoP = false;
-      }, function(){});
+        if(!syncPrimeraFotoP){ syncPrimeraFotoP = true; syncBarP("ok", "Sincronizado con la nube. Ya ves los datos de todos los equipos."); }
+      }, function(err){ syncMalP((err && err.message) || "error al escuchar los clientes"); });
       setTimeout(sincronizarNubeP, 1800);
     });
   }catch(e){ pintarEstadoNubeP(); }
@@ -1109,6 +1253,7 @@ function intentarLogin(){
   var pass = document.getElementById("login-pass").value;
   if(!email || !pass){ loginMsg("Escribe tu correo y tu contraseña."); return; }
   firebase.auth().signInWithEmailAndPassword(email, pass).catch(function(err){
+    registrarErrorP("panel: ingreso", (err && err.code) || (err && err.message) || "error de ingreso");
     if(err && err.code === "auth/too-many-requests") loginMsg("Demasiados intentos seguidos. Espera unos minutos e inténtalo de nuevo.");
     else loginMsg("No pudimos ingresar: revisa el correo y la contraseña.");
   });
