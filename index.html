@@ -114,10 +114,12 @@
       <div class="filtros" id="filtros-clientes">
         <button class="chipbtn on" data-f="todos">Todos</button>
         <button class="chipbtn" data-f="lista">Recompensa lista</button>
-        <button class="chipbtn" data-f="cerca">Cerca de su meta</button>
         <button class="chipbtn" data-f="cumple">Cumpleaños (30 días)</button>
         <button class="chipbtn" data-f="inactivos">Inactivos</button>
         <button class="chipbtn" data-f="sinvisitas">Sin visitas</button>
+        <select id="filtro-visitas" aria-label="Filtrar por visitas">
+          <option value="">Visitas: cualquiera</option>
+        </select>
         <select id="orden-clientes" aria-label="Ordenar clientes">
           <option value="nombre">Orden: Nombre</option>
           <option value="visitas">Orden: Más visitas</option>
@@ -257,7 +259,7 @@
             <p class="ayuda">Esto es lo que ve el cliente al abrir su tarjeta: su avance y su recompensa. Ojo: el QR impreso y la placa solo abren la tarjeta; desde la v18 la visita se anota con el código vivo del «Modo caja» o a mano desde la ficha del cliente.</p>
             <a class="btn sec bloque" href="cliente.html" target="_blank" rel="noopener" style="text-decoration:none">Ver la vista del cliente</a>
           </div>
-          <div class="card"><p class="ayuda"><b>Club en la nube (v24).</b> Los datos viven en la base propia del almacén y se comparten entre este panel y las tarjetas de los clientes. El panel pide ingreso con correo y contraseña, y las visitas de los clientes se anotan con el código rotativo del Modo caja. Los premios que un cliente gana en su tarjeta quedan «pendientes» y este panel los confirma solo al abrirse: un premio canjeado nunca se duplica. La compra mínima por visita se informa en la bienvenida y en la tarjeta del cliente. Al registrar a un cliente a mano, su primera visita queda anotada al tiro. Desde la v22, si algo falla la app muestra un aviso con botón para recargar en vez de quedar en blanco, una barra arriba avisa mientras el panel sincroniza con la nube, y los errores quedan registrados en Ajustes, sección «Errores de la app». Desde la v23, borrar una ficha la mueve a la <b>papelera</b> (al final de «Clientes»): sale del panel y de los avisos, pero se puede recuperar; el borrado definitivo se hace desde la misma papelera. Y en «Respaldo y datos» la app anota la fecha del último respaldo exportado y recuerda aquí cuando pasan 14 días sin exportar uno nuevo. Desde la v24, la vista «Clientes» se puede filtrar por tema (recompensa lista, cerca de su meta, cumpleaños en 30 días, inactivos, sin visitas) y ordenar por visitas, progreso, visita reciente o cumpleaños más cercano, además de buscar por nombre o teléfono.</p></div>
+          <div class="card"><p class="ayuda"><b>Club en la nube (v25).</b> Los datos viven en la base propia del almacén y se comparten entre este panel y las tarjetas de los clientes. El panel pide ingreso con correo y contraseña, y las visitas de los clientes se anotan con el código rotativo del Modo caja. Los premios que un cliente gana en su tarjeta quedan «pendientes» y este panel los confirma solo al abrirse: un premio canjeado nunca se duplica. La compra mínima por visita se informa en la bienvenida y en la tarjeta del cliente. Al registrar a un cliente a mano, su primera visita queda anotada al tiro. Desde la v22, si algo falla la app muestra un aviso con botón para recargar en vez de quedar en blanco, una barra arriba avisa mientras el panel sincroniza con la nube, y los errores quedan registrados en Ajustes, sección «Errores de la app». Desde la v23, borrar una ficha la mueve a la <b>papelera</b> (al final de «Clientes»): sale del panel y de los avisos, pero se puede recuperar; el borrado definitivo se hace desde la misma papelera. Y en «Respaldo y datos» la app anota la fecha del último respaldo exportado y recuerda aquí cuando pasan 14 días sin exportar uno nuevo. Desde la v24, la vista «Clientes» se puede filtrar por tema (recompensa lista, cumpleaños en 30 días, inactivos, sin visitas) y ordenar por visitas, progreso, visita reciente o cumpleaños más cercano, además de buscar por nombre o teléfono. Y desde la v25, el filtro de visitas es a elección: eliges el número exacto de visitas del progreso y la lista muestra solo a los clientes que van en ese número.</p></div>
         </div>
       </div>
     </section>
@@ -370,22 +372,35 @@ function premiosEf(c){ return (c.recompensas || 0) + ((c.premiosIds || []).lengt
    misma papelera, sí elimina el documento para siempre (ese es el
    que se usa cuando un cliente pide que borren sus datos). */
 function clientesActivos(){ return st.clientes.filter(function(c){ return !c.papelera; }); }
-/* ---------- filtros y orden de la lista de clientes (v24) ----------
+/* ---------- filtros y orden de la lista de clientes (v24, visitas a elección en v25) ----------
    Además de buscar por nombre o teléfono, la vista Clientes se
-   puede filtrar por tema (recompensa lista, cerca de la meta,
-   cumpleaños en 30 días, inactivos según la regla de Ajustes, sin
-   visitas) y ordenar por visitas, progreso, visita reciente o
-   cumpleaños más cercano. El filtro y el orden viven solo en esta
-   pantalla: no tocan los datos. */
+   puede filtrar por tema (recompensa lista, cumpleaños en 30 días,
+   inactivos según la regla de Ajustes, sin visitas), por el número
+   exacto de visitas del progreso que se elija (0 a meta-1, a pedido
+   de Ramiro en la v25, en vez del filtro fijo «cerca de su meta»),
+   y ordenar por visitas, progreso, visita reciente o cumpleaños
+   más cercano. El filtro y el orden viven solo en esta pantalla:
+   no tocan los datos. */
 var filtroCli = "todos";
 var ordenCli = "nombre";
+var filtroVisitas = "";
 function pasaFiltro(c, hoy){
+  if(filtroVisitas !== "" && (c.visitas || 0) !== parseInt(filtroVisitas, 10)) return false;
   if(filtroCli === "lista") return premiosEf(c) > 0;
-  if(filtroCli === "cerca") return premiosEf(c) === 0 && c.visitas > 0 && faltaPara(c) <= 2;
   if(filtroCli === "cumple"){ var d = diasParaCumple(c.cumple, hoy); return d !== null && d <= 30; }
   if(filtroCli === "inactivos"){ var dd = c.ultima ? diffDias(c.ultima, hoy) : null; return dd !== null && dd >= st.cfg.diasInactivo; }
   if(filtroCli === "sinvisitas") return (c.visitasTotal || 0) === 0;
   return true;
+}
+function llenarFiltroVisitas(){
+  var sel = document.getElementById("filtro-visitas"); if(!sel) return;
+  if(sel.dataset.meta === String(st.cfg.meta)) return;
+  sel.dataset.meta = String(st.cfg.meta);
+  var h = '<option value="">Visitas: cualquiera</option>';
+  for(var i = 0; i < st.cfg.meta; i++) h += '<option value="' + i + '">Con ' + i + (i === 1 ? " visita" : " visitas") + '</option>';
+  sel.innerHTML = h;
+  if(filtroVisitas !== "" && parseInt(filtroVisitas, 10) >= st.cfg.meta) filtroVisitas = "";
+  sel.value = filtroVisitas;
 }
 function ordenarLista(lista, hoy){
   var l = lista.slice();
@@ -708,11 +723,13 @@ function pintarTodoSeguro(){
   document.getElementById("cerca").innerHTML = cerca.length ? cerca.map(function(c){ return tarjetaCliente(c, hoy); }).join("") : '<p class="vacio">Todavía nadie está cerca de su recompensa.<br>Registra clientes y suma sus visitas.</p>';
   var c7 = cumples.filter(function(x){ return x.dias<=7; });
   document.getElementById("cumples-inicio").innerHTML = c7.length ? c7.map(function(x){ return tarjetaCliente(x.c, hoy); }).join("") : '<p class="vacio">Sin cumpleaños en los próximos 7 días.</p>';
+  llenarFiltroVisitas();
   var q = (document.getElementById("buscar").value || "").toLowerCase();
   var lista = ordenarLista(activos.filter(function(c){ return (!q || c.nombre.toLowerCase().indexOf(q)>=0 || String(c.telefono).indexOf(q)>=0) && pasaFiltro(c, hoy); }), hoy);
   var cuenta = document.getElementById("cuenta-clientes");
-  if(cuenta) cuenta.textContent = (filtroCli !== "todos" || q) ? ("Mostrando " + lista.length + " de " + activos.length) : "";
-  var vacioMsg = q ? "Ningún cliente coincide con esa búsqueda." : (filtroCli !== "todos" ? "Ningún cliente coincide con ese filtro.<br>Toca «Todos» para ver la lista completa." : "Aún no hay clientes registrados.<br>Registra el primero en «Registrar cliente».");
+  var hayFiltro = filtroCli !== "todos" || filtroVisitas !== "" || q;
+  if(cuenta) cuenta.textContent = hayFiltro ? ("Mostrando " + lista.length + " de " + activos.length) : "";
+  var vacioMsg = q ? "Ningún cliente coincide con esa búsqueda." : (hayFiltro ? "Ningún cliente coincide con ese filtro.<br>Toca «Todos» y «Visitas: cualquiera» para ver la lista completa." : "Aún no hay clientes registrados.<br>Registra el primero en «Registrar cliente».");
   document.getElementById("lista-clientes").innerHTML = lista.length
     ? tablaClientes(lista, hoy) + '<div class="solo-movil">' + lista.map(function(c){ return tarjetaCliente(c, hoy); }).join("") + '</div>'
     : '<p class="vacio">' + vacioMsg + '</p>';
@@ -746,6 +763,7 @@ document.querySelectorAll("#filtros-clientes .chipbtn").forEach(function(b){
   });
 });
 document.getElementById("orden-clientes").addEventListener("change", function(){ ordenCli = this.value; pintarTodo(); });
+document.getElementById("filtro-visitas").addEventListener("change", function(){ filtroVisitas = this.value; pintarTodo(); });
 document.getElementById("btn-nuevo").addEventListener("click", function(){
   var nombre = document.getElementById("n-nombre").value.trim();
   var fono = document.getElementById("n-fono").value.trim();
