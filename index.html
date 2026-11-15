@@ -10,213 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">
-<style>
-:root{
-  --p:#1f6f43; --p-osc:#175735; --p-suave:#e9f2ec;
-  --fondo:#f4f3f0; --card:#ffffff; --txt:#1b1a17; --mut:#7d7666; --borde:#e6e1d6;
-  --lateral:#16211a; --lateral-txt:#e8ece9; --lateral-mut:#93a298;
-  --rojo:#b3261e; --wa:#1fa855;
-  --sombra:0 1px 2px rgba(27,26,23,.05),0 10px 30px -18px rgba(27,26,23,.25);
-  --radio:14px;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html{-webkit-text-size-adjust:100%}
-body{font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--fondo);color:var(--txt);font-size:14.5px;line-height:1.5}
-button{font-family:inherit}
-svg.ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
-
-/* ===== estructura ===== */
-.app{display:flex;min-height:100vh}
-.contenido{flex:1;min-width:0}
-.wrap{max-width:1140px;margin:0 auto;padding:30px 34px 60px}
-
-/* ===== barra lateral (desktop) ===== */
-.lateral{width:250px;flex:none;background:var(--lateral);color:var(--lateral-txt);position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:22px 16px}
-.lateral .brand{display:flex;align-items:center;gap:11px;padding:2px 8px 20px;border-bottom:1px solid rgba(255,255,255,.09)}
-.marca{overflow:hidden;padding:0;width:40px;height:40px;border-radius:11px;background:var(--p);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;letter-spacing:.4px;flex:none}
-.lateral .brand b{display:block;font-size:14.5px;font-weight:650;line-height:1.25}
-.lateral .brand span{font-size:11.5px;color:var(--lateral-mut)}
-.lateral nav{margin-top:18px;display:flex;flex-direction:column;gap:3px}
-.lateral .nav-tit{font-size:10.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--lateral-mut);padding:10px 10px 6px}
-.lateral nav button{display:flex;align-items:center;gap:11px;width:100%;background:none;border:none;color:var(--lateral-mut);font-size:14px;font-weight:550;padding:10px;border-radius:10px;cursor:pointer;text-align:left;transition:.15s}
-.lateral nav button:hover{background:rgba(255,255,255,.06);color:var(--lateral-txt)}
-.lateral nav button.on{background:var(--p);color:#fff}
-.lateral .pie{margin-top:auto;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:13px 14px}
-.lateral .pie b{display:block;font-size:12.5px;font-weight:650}
-.lateral .pie span{font-size:11.5px;color:var(--lateral-mut);line-height:1.45;display:block;margin-top:2px}
-
-/* ===== barra superior (móvil) ===== */
-.topbar{display:none;background:var(--card);border-bottom:1px solid var(--borde);position:sticky;top:0;z-index:5}
-.topbar .in{max-width:1140px;margin:0 auto;padding:11px 16px;display:flex;align-items:center;gap:10px}
-.topbar .marca{width:34px;height:34px;border-radius:9px;font-size:12.5px}
-.topbar b{font-size:15px;font-weight:650}
-.topbar span{display:block;font-size:11.5px;color:var(--mut);line-height:1.2}
-.topbar .club{margin-left:auto;font-size:10px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:var(--p);background:var(--p-suave);padding:4px 9px;border-radius:99px}
-
-/* ===== navegación inferior (móvil) ===== */
-.tabbar{display:none;position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--borde);z-index:6;padding-bottom:env(safe-area-inset-bottom)}
-.tabbar nav{display:flex}
-.tabbar button{flex:1;background:none;border:none;padding:8px 2px 9px;font-size:10.5px;font-weight:600;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
-.tabbar button.on{color:var(--p)}
-
-/* ===== vistas ===== */
-.vista{display:none}.vista.activa{display:block;animation:entra .25s ease}
-@keyframes entra{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
-.page-head{margin-bottom:22px}
-.page-head h2{font-family:"Newsreader",Georgia,serif;font-size:29px;font-weight:600;letter-spacing:-.2px;line-height:1.15}
-.page-head p{color:var(--mut);font-size:14px;margin-top:4px}
-.tit-sec{font-size:11px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:var(--mut);margin:26px 0 11px;display:flex;align-items:center;gap:8px}
-.tit-sec .ic{width:15px;height:15px;color:var(--p)}
-.cols2{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
-.cols2 .tit-sec{margin-top:0}
-
-/* ===== tarjetas / paneles / KPIs ===== */
-.card{background:var(--card);border:1px solid var(--borde);border-radius:var(--radio);padding:20px;margin-bottom:16px;box-shadow:var(--sombra)}
-.card h3{font-size:15px;font-weight:650;margin-bottom:5px}
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.kpi{background:var(--card);border:1px solid var(--borde);border-radius:var(--radio);padding:17px 18px;box-shadow:var(--sombra)}
-.kpi .lb{font-size:10.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--mut);display:flex;align-items:center;gap:6px}
-.kpi .lb .ic{width:14px;height:14px;color:var(--p)}
-.kpi b{display:block;font-size:28px;font-weight:750;letter-spacing:-.6px;margin-top:6px;line-height:1.1}
-.kpi span{font-size:12px;color:var(--mut)}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 22px}
-.ancho-form{max-width:680px}
-.ajustes-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;align-items:start}
-
-/* ===== formularios ===== */
-label{display:block;font-size:11px;font-weight:650;letter-spacing:.7px;color:var(--mut);text-transform:uppercase;margin:15px 0 6px}
-label:first-of-type{margin-top:6px}
-input,select,textarea{width:100%;padding:10.5px 12px;border:1px solid var(--borde);border-radius:10px;font-size:14.5px;background:#fff;color:var(--txt);outline:none;transition:border-color .15s,box-shadow .15s;font-family:inherit}
-input:focus,select:focus,textarea:focus{border-color:var(--p);box-shadow:0 0 0 3px var(--p-suave)}
-input[type="color"]{height:46px;padding:4px;cursor:pointer}
-::placeholder{color:#b3ab99}
-.buscador{position:relative;max-width:420px}
-.buscador .ic{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--mut)}
-.buscador input{padding-left:37px;background:var(--card)}
-
-/* ===== botones ===== */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 18px;height:41px;border:none;border-radius:10px;background:var(--p);color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:.15s;margin-top:16px}
-.btn:hover{background:var(--p-osc)}
-.btn:active{transform:scale(.99)}
-.btn.bloque{display:flex;width:100%}
-.btn.sec{background:#fff;color:var(--p);border:1.5px solid var(--p)}
-.btn.sec:hover{background:var(--p-suave)}
-.btn.rojo{background:#fff;color:var(--rojo);border:1.5px solid #ecc7c3}
-.btn.rojo:hover{background:#fdf1f0}
-.btn.gris{background:#fff;color:var(--txt);border:1.5px solid var(--borde)}
-.btn.gris:hover{background:var(--fondo)}
-.btn.wa{background:var(--wa)} .btn.wa:hover{background:#178544}
-.btn.sm{height:32px;padding:0 13px;font-size:12.5px;border-radius:99px;margin-top:0;font-weight:600}
-.btn.sm .ic{width:13px;height:13px}
-.fila{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
-
-/* ===== clientes: tarjetas (móvil) y tabla (desktop) ===== */
-.cliente{background:var(--card);border:1px solid var(--borde);border-radius:var(--radio);padding:15px 16px;margin-bottom:11px;box-shadow:var(--sombra)}
-.cli-top{display:flex;align-items:center;gap:12px}
-.avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13.5px;color:#fff;flex:none}
-.cli-top .nom{font-weight:650;font-size:15px}
-.cli-top .det{font-size:12.5px;color:var(--mut)}
-.mini{font-size:12.5px;color:var(--mut);margin-top:9px}
-.mini b{color:var(--txt);font-weight:650}
-.puntos{display:inline-flex;gap:4.5px;flex-wrap:wrap;vertical-align:middle}
-.puntos i{width:9px;height:9px;border-radius:50%;background:#ece7da;border:1px solid var(--borde)}
-.puntos i.lleno{background:var(--p);border-color:var(--p)}
-.puntos.sm i{width:8px;height:8px}
-.barra{height:6px;background:#ece7da;border-radius:99px;overflow:hidden;margin-top:11px}
-.barra i{display:block;height:100%;background:var(--p);border-radius:99px}
-.chip{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:3px 10px;font-size:11px;font-weight:650;white-space:nowrap}
-.chip.cumple{background:#fdf3e0;color:#92600d}
-.chip.lista{background:var(--p-suave);color:var(--p-osc)}
-.chip.neutro{background:#f1efe9;color:var(--mut)}
-.chip .ic{width:11px;height:11px}
-.vacio{color:var(--mut);font-size:13.5px;text-align:center;padding:26px 14px;border:1.5px dashed var(--borde);border-radius:var(--radio);background:var(--card)}
-.ayuda{font-size:13px;color:var(--mut);line-height:1.6}
-.consent-check{display:flex;gap:9px;align-items:flex-start;margin:12px 0 2px;font-size:13.5px;cursor:pointer}
-.consent-check input{width:18px;height:18px;margin-top:2px;flex:none}
-#v-login{position:fixed;inset:0;z-index:3000;background:var(--fondo,#f4f3f0);display:flex;align-items:center;justify-content:center;padding:20px}
-.login-card{background:#fff;border:1px solid var(--borde,#e6e1d6);border-radius:18px;box-shadow:0 18px 44px -18px rgba(27,26,23,.35);max-width:380px;width:100%;padding:28px 24px;text-align:left}
-.login-card img{width:58px;height:58px;border-radius:14px;display:block;margin-bottom:14px}
-.login-card h2{font-family:"Newsreader",Georgia,serif;font-size:24px;font-weight:600;margin-bottom:4px}
-.login-card p{color:var(--mut);font-size:13.5px;line-height:1.55}
-.login-error{background:#fdeeee;color:#8c2f22;border-radius:10px;padding:10px 12px;font-size:13px;margin-top:12px;line-height:1.45}
-.login-ok{background:var(--p-suave,#e9f2ec);color:var(--p-osc,#175735)}
-.login-link{display:block;margin:14px auto 0;background:none;border:none;color:var(--p);font-size:13.5px;font-weight:600;cursor:pointer;text-align:center;width:100%}
-.ayuda b{color:var(--txt)}
-.tabla-wrap{background:var(--card);border:1px solid var(--borde);border-radius:var(--radio);box-shadow:var(--sombra);overflow:auto}
-table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:760px}
-thead th{font-size:10.5px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:var(--mut);text-align:left;padding:13px 16px;border-bottom:1px solid var(--borde);background:#fbfaf8;white-space:nowrap}
-tbody td{padding:12px 16px;border-bottom:1px solid #f0ece1;vertical-align:middle}
-tbody tr:last-child td{border-bottom:none}
-tbody tr{transition:background .12s}
-tbody tr:hover{background:#fbfaf7}
-td .nom{font-weight:650;font-size:14px}
-td .sub{font-size:12px;color:var(--mut)}
-.cel-cliente{display:flex;align-items:center;gap:11px}
-.cel-cliente .avatar{width:34px;height:34px;font-size:12px}
-td .acciones{display:flex;gap:6px;justify-content:flex-end}
-.solo-movil{display:none}
-
-#toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(16px);background:#201d19;color:#fff;padding:12px 20px;border-radius:11px;font-size:13.5px;font-weight:550;opacity:0;pointer-events:none;transition:.25s;z-index:20;max-width:92vw;text-align:center;box-shadow:0 14px 34px -10px rgba(0,0,0,.4)}
-#toast.ver{opacity:1;transform:translateX(-50%) translateY(0)}
-.colores{display:flex;gap:9px;flex-wrap:wrap;margin-top:9px}
-.colores button{width:34px;height:34px;border-radius:50%;border:2px solid rgba(255,255,255,.9);box-shadow:0 0 0 1px var(--borde);padding:0;cursor:pointer;transition:transform .1s}
-.colores button:hover{transform:scale(1.1)}
-.colores button.sel{box-shadow:0 0 0 2px var(--txt)}
-hr.sep{border:none;border-top:1px solid var(--borde);margin:16px 0 2px}
-
-
-/* ===== avisos ===== */
-.badge{display:none;min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:#c8402f;color:#fff;font-size:11px;font-weight:700;align-items:center;justify-content:center;margin-left:auto}
-.badge.ver{display:inline-flex}
-.tabbar .badge{margin-left:0;margin-top:2px}
-.aviso-tipo{font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
-.msg-prev{background:#f8f6f1;border:1px solid var(--borde);border-radius:11px;padding:11px 13px;font-size:13.5px;color:#454138;margin-top:10px;line-height:1.55;white-space:pre-wrap}
-textarea{min-height:110px;resize:vertical;line-height:1.55}
-.vars{font-size:12px;color:var(--mut);margin-top:6px}
-.vars code{background:#f1efe9;border:1px solid var(--borde);border-radius:6px;padding:1px 6px;font-size:11.5px}
-
-/* ===== modo caja ===== */
-.caja-qr{width:290px;height:290px;max-width:80vw;margin:8px auto 4px;background:#fff;border:1px solid var(--borde);border-radius:16px;padding:12px;display:flex;align-items:center;justify-content:center}
-.caja-qr svg{width:100%;height:100%;display:block}
-.caja-reloj{font-size:15px;font-weight:650;margin-top:10px}
-.caja-estado{margin-top:6px}
-.caja-estado.mal{color:var(--rojo);font-weight:600}
-
-/* ===== responsive ===== */
-@media (max-width:1080px){ .kpis{grid-template-columns:repeat(2,1fr)} .cols2{grid-template-columns:1fr} .ajustes-grid{grid-template-columns:1fr} }
-@media (max-width:959px){
-  .lateral{display:none}
-  .topbar{display:block}
-  .tabbar{display:block}
-  .wrap{padding:18px 15px 110px}
-  .page-head h2{font-size:24px}
-  body{font-size:15px;padding-bottom:0}
-  input,select,textarea{font-size:16px}
-  .tabla-wrap{display:none}
-  .solo-movil{display:block}
-  .form-grid{grid-template-columns:1fr}
-}
-@media (min-width:960px){ .solo-movil{display:none} }
-.marca img{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit}
-
-/* ===== v22: red de seguridad, sincronización y errores ===== */
-#red-seguridad{position:fixed;inset:0;z-index:4000;background:var(--fondo);display:none;align-items:center;justify-content:center;padding:20px}
-#red-seguridad.ver{display:flex}
-#red-seguridad .caja-error{background:#fff;border:1px solid var(--borde);border-radius:18px;box-shadow:0 18px 44px -18px rgba(27,26,23,.35);max-width:400px;width:100%;padding:28px 24px;text-align:center}
-#red-seguridad h2{font-family:"Newsreader",Georgia,serif;font-size:24px;font-weight:600;margin-bottom:6px}
-#red-seguridad p{color:var(--mut);font-size:14px;line-height:1.55}
-.sync-bar{display:none;align-items:center;gap:9px;background:#fdf3e0;color:#7c5410;border:1px solid #ecd9ac;border-radius:11px;padding:9px 13px;font-size:13px;font-weight:600;margin-bottom:16px}
-.sync-bar.ver{display:flex}
-.sync-bar.ok{background:var(--p-suave);color:var(--p-osc);border-color:#cfe3d4}
-.sync-bar.mal{background:#fdeeee;color:#8c2f22;border-color:#ecc7c3}
-.sync-punto{width:9px;height:9px;border-radius:50%;background:currentColor;flex:none;animation:syncpulso 1s ease-in-out infinite}
-.sync-bar.ok .sync-punto,.sync-bar.mal .sync-punto{animation:none}
-@keyframes syncpulso{0%,100%{opacity:.35}50%{opacity:1}}
-.error-item{border-bottom:1px solid #f0ece1;padding:10px 0;font-size:13px;line-height:1.5}
-.error-item:last-child{border-bottom:none}
-.error-item .cuando{color:var(--mut);font-size:12px}
-.error-item .donde{font-weight:650}
-</style>
+<link rel="stylesheet" href="panel.css">
 </head>
 <body>
 <div id="red-seguridad"><div class="caja-error">
@@ -316,6 +110,22 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
       <div class="buscador">
         <svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input id="buscar" type="search" placeholder="Buscar por nombre o teléfono">
+      </div>
+      <div class="filtros" id="filtros-clientes">
+        <button class="chipbtn on" data-f="todos">Todos</button>
+        <button class="chipbtn" data-f="lista">Recompensa lista</button>
+        <button class="chipbtn" data-f="cerca">Cerca de su meta</button>
+        <button class="chipbtn" data-f="cumple">Cumpleaños (30 días)</button>
+        <button class="chipbtn" data-f="inactivos">Inactivos</button>
+        <button class="chipbtn" data-f="sinvisitas">Sin visitas</button>
+        <select id="orden-clientes" aria-label="Ordenar clientes">
+          <option value="nombre">Orden: Nombre</option>
+          <option value="visitas">Orden: Más visitas</option>
+          <option value="progreso">Orden: Mayor progreso</option>
+          <option value="reciente">Orden: Visita más reciente</option>
+          <option value="cumple">Orden: Cumpleaños más cercano</option>
+        </select>
+        <span class="cuenta" id="cuenta-clientes"></span>
       </div>
       <div style="height:16px"></div>
       <div id="lista-clientes"></div>
@@ -447,7 +257,7 @@ textarea{min-height:110px;resize:vertical;line-height:1.55}
             <p class="ayuda">Esto es lo que ve el cliente al abrir su tarjeta: su avance y su recompensa. Ojo: el QR impreso y la placa solo abren la tarjeta; desde la v18 la visita se anota con el código vivo del «Modo caja» o a mano desde la ficha del cliente.</p>
             <a class="btn sec bloque" href="cliente.html" target="_blank" rel="noopener" style="text-decoration:none">Ver la vista del cliente</a>
           </div>
-          <div class="card"><p class="ayuda"><b>Club en la nube (v23).</b> Los datos viven en la base propia del almacén y se comparten entre este panel y las tarjetas de los clientes. El panel pide ingreso con correo y contraseña, y las visitas de los clientes se anotan con el código rotativo del Modo caja. Los premios que un cliente gana en su tarjeta quedan «pendientes» y este panel los confirma solo al abrirse: un premio canjeado nunca se duplica. La compra mínima por visita se informa en la bienvenida y en la tarjeta del cliente. Al registrar a un cliente a mano, su primera visita queda anotada al tiro. Desde la v22, si algo falla la app muestra un aviso con botón para recargar en vez de quedar en blanco, una barra arriba avisa mientras el panel sincroniza con la nube, y los errores quedan registrados en Ajustes, sección «Errores de la app». Desde la v23, borrar una ficha la mueve a la <b>papelera</b> (al final de «Clientes»): sale del panel y de los avisos, pero se puede recuperar; el borrado definitivo se hace desde la misma papelera. Y en «Respaldo y datos» la app anota la fecha del último respaldo exportado y recuerda aquí cuando pasan 14 días sin exportar uno nuevo.</p></div>
+          <div class="card"><p class="ayuda"><b>Club en la nube (v24).</b> Los datos viven en la base propia del almacén y se comparten entre este panel y las tarjetas de los clientes. El panel pide ingreso con correo y contraseña, y las visitas de los clientes se anotan con el código rotativo del Modo caja. Los premios que un cliente gana en su tarjeta quedan «pendientes» y este panel los confirma solo al abrirse: un premio canjeado nunca se duplica. La compra mínima por visita se informa en la bienvenida y en la tarjeta del cliente. Al registrar a un cliente a mano, su primera visita queda anotada al tiro. Desde la v22, si algo falla la app muestra un aviso con botón para recargar en vez de quedar en blanco, una barra arriba avisa mientras el panel sincroniza con la nube, y los errores quedan registrados en Ajustes, sección «Errores de la app». Desde la v23, borrar una ficha la mueve a la <b>papelera</b> (al final de «Clientes»): sale del panel y de los avisos, pero se puede recuperar; el borrado definitivo se hace desde la misma papelera. Y en «Respaldo y datos» la app anota la fecha del último respaldo exportado y recuerda aquí cuando pasan 14 días sin exportar uno nuevo. Desde la v24, la vista «Clientes» se puede filtrar por tema (recompensa lista, cerca de su meta, cumpleaños en 30 días, inactivos, sin visitas) y ordenar por visitas, progreso, visita reciente o cumpleaños más cercano, además de buscar por nombre o teléfono.</p></div>
         </div>
       </div>
     </section>
@@ -560,6 +370,32 @@ function premiosEf(c){ return (c.recompensas || 0) + ((c.premiosIds || []).lengt
    misma papelera, sí elimina el documento para siempre (ese es el
    que se usa cuando un cliente pide que borren sus datos). */
 function clientesActivos(){ return st.clientes.filter(function(c){ return !c.papelera; }); }
+/* ---------- filtros y orden de la lista de clientes (v24) ----------
+   Además de buscar por nombre o teléfono, la vista Clientes se
+   puede filtrar por tema (recompensa lista, cerca de la meta,
+   cumpleaños en 30 días, inactivos según la regla de Ajustes, sin
+   visitas) y ordenar por visitas, progreso, visita reciente o
+   cumpleaños más cercano. El filtro y el orden viven solo en esta
+   pantalla: no tocan los datos. */
+var filtroCli = "todos";
+var ordenCli = "nombre";
+function pasaFiltro(c, hoy){
+  if(filtroCli === "lista") return premiosEf(c) > 0;
+  if(filtroCli === "cerca") return premiosEf(c) === 0 && c.visitas > 0 && faltaPara(c) <= 2;
+  if(filtroCli === "cumple"){ var d = diasParaCumple(c.cumple, hoy); return d !== null && d <= 30; }
+  if(filtroCli === "inactivos"){ var dd = c.ultima ? diffDias(c.ultima, hoy) : null; return dd !== null && dd >= st.cfg.diasInactivo; }
+  if(filtroCli === "sinvisitas") return (c.visitasTotal || 0) === 0;
+  return true;
+}
+function ordenarLista(lista, hoy){
+  var l = lista.slice();
+  if(ordenCli === "visitas") l.sort(function(a,b){ return ((b.visitasTotal||0)-(a.visitasTotal||0)) || a.nombre.localeCompare(b.nombre); });
+  else if(ordenCli === "progreso") l.sort(function(a,b){ return (faltaPara(a)-faltaPara(b)) || ((b.visitasTotal||0)-(a.visitasTotal||0)) || a.nombre.localeCompare(b.nombre); });
+  else if(ordenCli === "reciente") l.sort(function(a,b){ return String(b.ultima||"").localeCompare(String(a.ultima||"")) || a.nombre.localeCompare(b.nombre); });
+  else if(ordenCli === "cumple") l.sort(function(a,b){ var da = diasParaCumple(a.cumple, hoy), db = diasParaCumple(b.cumple, hoy); if(da===null && db===null) return a.nombre.localeCompare(b.nombre); if(da===null) return 1; if(db===null) return -1; return da-db || a.nombre.localeCompare(b.nombre); });
+  else l.sort(function(a,b){ return a.nombre.localeCompare(b.nombre); });
+  return l;
+}
 function pintarPapelera(){
   var zona = document.getElementById("papelera-zona"); if(!zona) return;
   var papel = st.clientes.filter(function(c){ return c.papelera; });
@@ -873,9 +709,10 @@ function pintarTodoSeguro(){
   var c7 = cumples.filter(function(x){ return x.dias<=7; });
   document.getElementById("cumples-inicio").innerHTML = c7.length ? c7.map(function(x){ return tarjetaCliente(x.c, hoy); }).join("") : '<p class="vacio">Sin cumpleaños en los próximos 7 días.</p>';
   var q = (document.getElementById("buscar").value || "").toLowerCase();
-  var lista = activos.filter(function(c){ return !q || c.nombre.toLowerCase().indexOf(q)>=0 || String(c.telefono).indexOf(q)>=0; })
-    .slice().sort(function(a,b){ return a.nombre.localeCompare(b.nombre); });
-  var vacioMsg = q ? "Ningún cliente coincide con esa búsqueda." : "Aún no hay clientes registrados.<br>Registra el primero en «Registrar cliente».";
+  var lista = ordenarLista(activos.filter(function(c){ return (!q || c.nombre.toLowerCase().indexOf(q)>=0 || String(c.telefono).indexOf(q)>=0) && pasaFiltro(c, hoy); }), hoy);
+  var cuenta = document.getElementById("cuenta-clientes");
+  if(cuenta) cuenta.textContent = (filtroCli !== "todos" || q) ? ("Mostrando " + lista.length + " de " + activos.length) : "";
+  var vacioMsg = q ? "Ningún cliente coincide con esa búsqueda." : (filtroCli !== "todos" ? "Ningún cliente coincide con ese filtro.<br>Toca «Todos» para ver la lista completa." : "Aún no hay clientes registrados.<br>Registra el primero en «Registrar cliente».");
   document.getElementById("lista-clientes").innerHTML = lista.length
     ? tablaClientes(lista, hoy) + '<div class="solo-movil">' + lista.map(function(c){ return tarjetaCliente(c, hoy); }).join("") + '</div>'
     : '<p class="vacio">' + vacioMsg + '</p>';
@@ -901,6 +738,14 @@ function irA(v){
 /* ---------- eventos ---------- */
 document.querySelectorAll("nav button").forEach(function(b){ b.addEventListener("click", function(){ irA(b.dataset.v); }); });
 document.getElementById("buscar").addEventListener("input", pintarTodo);
+document.querySelectorAll("#filtros-clientes .chipbtn").forEach(function(b){
+  b.addEventListener("click", function(){
+    filtroCli = b.dataset.f;
+    document.querySelectorAll("#filtros-clientes .chipbtn").forEach(function(x){ x.classList.toggle("on", x===b); });
+    pintarTodo();
+  });
+});
+document.getElementById("orden-clientes").addEventListener("change", function(){ ordenCli = this.value; pintarTodo(); });
 document.getElementById("btn-nuevo").addEventListener("click", function(){
   var nombre = document.getElementById("n-nombre").value.trim();
   var fono = document.getElementById("n-fono").value.trim();
