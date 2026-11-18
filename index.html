@@ -259,7 +259,7 @@
             <p class="ayuda">Esto es lo que ve el cliente al abrir su tarjeta: su avance y su recompensa. Ojo: el QR impreso y la placa solo abren la tarjeta; desde la v18 la visita se anota con el código vivo del «Modo caja» o a mano desde la ficha del cliente.</p>
             <a class="btn sec bloque" href="cliente.html" target="_blank" rel="noopener" style="text-decoration:none">Ver la vista del cliente</a>
           </div>
-          <div class="card"><p class="ayuda"><b>Club en la nube (v25).</b> Los datos viven en la base propia del almacén y se comparten entre este panel y las tarjetas de los clientes. El panel pide ingreso con correo y contraseña, y las visitas de los clientes se anotan con el código rotativo del Modo caja. Los premios que un cliente gana en su tarjeta quedan «pendientes» y este panel los confirma solo al abrirse: un premio canjeado nunca se duplica. La compra mínima por visita se informa en la bienvenida y en la tarjeta del cliente. Al registrar a un cliente a mano, su primera visita queda anotada al tiro. Desde la v22, si algo falla la app muestra un aviso con botón para recargar en vez de quedar en blanco, una barra arriba avisa mientras el panel sincroniza con la nube, y los errores quedan registrados en Ajustes, sección «Errores de la app». Desde la v23, borrar una ficha la mueve a la <b>papelera</b> (al final de «Clientes»): sale del panel y de los avisos, pero se puede recuperar; el borrado definitivo se hace desde la misma papelera. Y en «Respaldo y datos» la app anota la fecha del último respaldo exportado y recuerda aquí cuando pasan 14 días sin exportar uno nuevo. Desde la v24, la vista «Clientes» se puede filtrar por tema (recompensa lista, cumpleaños en 30 días, inactivos, sin visitas) y ordenar por visitas, progreso, visita reciente o cumpleaños más cercano, además de buscar por nombre o teléfono. Y desde la v25, el filtro de visitas es a elección: eliges el número exacto de visitas del progreso y la lista muestra solo a los clientes que van en ese número.</p></div>
+          <div class="card"><p class="ayuda"><b>Club en la nube (v26).</b> Los datos viven en la base propia del almacén y se comparten entre este panel y las tarjetas de los clientes. El panel pide ingreso con correo y contraseña, y las visitas de los clientes se anotan con el código rotativo del Modo caja. Los premios que un cliente gana en su tarjeta quedan «pendientes» y este panel los confirma solo al abrirse: un premio canjeado nunca se duplica. La compra mínima por visita se informa en la bienvenida y en la tarjeta del cliente. Al registrar a un cliente a mano, su primera visita queda anotada al tiro. Desde la v22, si algo falla la app muestra un aviso con botón para recargar en vez de quedar en blanco, una barra arriba avisa mientras el panel sincroniza con la nube, y los errores quedan registrados en Ajustes, sección «Errores de la app». Desde la v23, borrar una ficha la mueve a la <b>papelera</b> (al final de «Clientes»): sale del panel y de los avisos, pero se puede recuperar; el borrado definitivo se hace desde la misma papelera. Y en «Respaldo y datos» la app anota la fecha del último respaldo exportado y recuerda aquí cuando pasan 14 días sin exportar uno nuevo. Desde la v24, la vista «Clientes» se puede filtrar por tema (recompensa lista, cumpleaños en 30 días, inactivos, sin visitas) y ordenar por visitas, progreso, visita reciente o cumpleaños más cercano, además de buscar por nombre o teléfono. Y desde la v25, el filtro de visitas es a elección: eliges el número exacto de visitas del progreso y la lista muestra solo a los clientes que van en ese número. La v26 protege los datos: el panel nunca sube cambios antes de recibir la lista de la nube, un conteo de visitas jamás retrocede desde una copia local, la sincronización ya no borra clientes de la nube, y registrar un teléfono que ya existe no crea un duplicado (si estaba en la papelera, vuelve a la lista con sus visitas).</p></div>
         </div>
       </div>
     </section>
@@ -294,7 +294,7 @@ function registrarErrorP(donde, detalle){
   var txt = String(detalle == null ? "" : detalle).slice(0, 300);
   var ultimo = lista[lista.length - 1];
   if(ultimo && ultimo.donde === donde && ultimo.detalle === txt && (Date.now() - (ultimo.ts || 0)) < 60000) return;
-  lista.push({donde:String(donde || "panel"), detalle:txt, ts:Date.now(), app:"panel-v22"});
+  lista.push({donde:String(donde || "panel"), detalle:txt, ts:Date.now(), app:"panel-v26"});
   erroresGuardarP(lista);
   if(typeof subirErroresP === "function") subirErroresP();
 }
@@ -436,6 +436,12 @@ function borrarDefinitivo(id){
   var c = st.clientes.find(function(x){ return x.id===id; }); if(!c) return;
   if(!confirm("¿Borrar a " + c.nombre + " PARA SIEMPRE? Se elimina su historial completo, también de la nube, y no se puede recuperar.")) return;
   st.clientes = st.clientes.filter(function(x){ return x.id!==id; });
+  // v26: el borrado de la nube es directo y explícito (la subida ya
+  // no borra por ausencia local).
+  if(nubeOnP && nubeDbP && c.telefono){
+    nubeDbP.collection("raulito_club_clientes").doc(c.telefono).delete().catch(function(err){ registrarErrorP("panel: borrar definitivo", (err && err.message) || String(err || "")); });
+    delete nubeSyncP[c.telefono]; delete nubeTotalesP[c.telefono];
+  }
   guardar(); pintarTodo(); toast("Cliente borrado para siempre");
 }
 /* ---------- aviso de respaldo vencido (v23) ----------
@@ -773,6 +779,22 @@ document.getElementById("btn-nuevo").addEventListener("click", function(){
   var fonoOk = fonoCanonico(fono);
   if(!fonoOk){ toast("Ese teléfono no es válido (formato WhatsApp con código de país, ej: +56 9 XXXX XXXX)"); return; }
   if(!document.getElementById("n-consent").checked){ toast("Marca la autorización del cliente: hay que explicarle y que acepte"); return; }
+  // v26: un teléfono ya registrado NO se crea de nuevo. Antes, el
+  // duplicado pisaba la ficha real en la nube y el cliente volvía a
+  // 1 visita (pasó con clientes que «desaparecían» de la lista).
+  var existente = st.clientes.find(function(x){ return x.telefono === fonoOk; });
+  if(existente){
+    document.getElementById("buscar").value = existente.nombre;
+    if(existente.papelera){
+      existente.papelera = false; existente.borradoEn = "";
+      guardar(); pintarTodo(); irA("clientes");
+      toast(existente.nombre.split(" ")[0] + " estaba en la papelera. Volvió a la lista con sus visitas, no se creó de nuevo.");
+    } else {
+      pintarTodo(); irA("clientes");
+      toast("Ese teléfono ya está registrado como " + existente.nombre + ". No se creó de nuevo, para no borrar sus visitas.");
+    }
+    return;
+  }
   // Registro a mano = el cliente está en el local comprando ahora mismo:
   // su primera visita queda anotada al tiro (v21).
   var v0 = 1, r0 = 0;
@@ -790,7 +812,16 @@ document.getElementById("btn-editar").addEventListener("click", function(){
   if(fonoEd){
     var fonoEdOk = fonoCanonico(fonoEd);
     if(!fonoEdOk){ toast("Ese teléfono no es válido (formato WhatsApp con código de país, ej: +56 9 XXXX XXXX)"); return; }
-    c.telefono = fonoEdOk;
+    if(fonoEdOk !== c.telefono){
+      // v26: al cambiar el teléfono, el documento viejo se borra de
+      // la nube directamente (la subida ya no borra por ausencia).
+      var fonoViejo = c.telefono;
+      if(nubeOnP && nubeDbP && fonoViejo){
+        nubeDbP.collection("raulito_club_clientes").doc(fonoViejo).delete().catch(function(err){ registrarErrorP("panel: cambio de teléfono", (err && err.message) || String(err || "")); });
+        delete nubeSyncP[fonoViejo]; delete nubeTotalesP[fonoViejo];
+      }
+      c.telefono = fonoEdOk;
+    }
   }
   c.cumple = document.getElementById("e-cumple").value || "";
   guardar(); pintarTodo(); toast("Cambios guardados"); irA("clientes");
@@ -904,7 +935,7 @@ var FIREBASE_CONFIG = {
   messagingSenderId: "1066165996738",
   appId: "1:1066165996738:web:40ab03ab3b15043db53f5b"
 };
-var nubeDbP = null, nubeOnP = false, nubeSyncP = {}, nubeCfgJsonP = "", nubeTimerP = null, nubeAplicandoP = false;
+var nubeDbP = null, nubeOnP = false, nubeSyncP = {}, nubeTotalesP = {}, nubeCfgJsonP = "", nubeTimerP = null, nubeAplicandoP = false;
 var nubeLocalesPrevios = null, nubeMigracionHecha = false;
 function esDemoC(c){
   if(c.demo) return true;
@@ -951,16 +982,28 @@ function pintarEstadoNubeP(){
 }
 function sincronizarNubeP(){
   if(!nubeOnP || !nubeDbP || nubeAplicandoP) return;
+  // v26: jamás empujar antes de la primera foto de la nube. Antes de
+  // eso, la lista local puede ser una copia vieja de este equipo, y
+  // empujarla pisaba los conteos reales de la nube (clientes que
+  // volvían de 2 visitas a 1).
+  if(!syncPrimeraFotoP) return;
   var deseado = {};
   st.clientes.forEach(function(c){ if(!esDemoC(c) && c.telefono) deseado[c.telefono] = docDeCliente(c); });
   var batch = nubeDbP.batch(); var cambios = 0;
   Object.keys(deseado).forEach(function(f){
     var cn = canonObj(deseado[f]);
-    if(nubeSyncP[f] !== cn){ batch.set(nubeDbP.collection("raulito_club_clientes").doc(f), deseado[f]); nubeSyncP[f] = cn; cambios++; }
+    if(nubeSyncP[f] === cn) return;
+    // v26: un conteo jamás retrocede desde una copia local. Si la
+    // nube conoce más visitas que esta copia, no se empuja: la
+    // próxima foto de la nube refresca la lista de este equipo.
+    var totalNube = nubeTotalesP[f];
+    if(totalNube != null && (deseado[f].visitasTotal || 0) < totalNube) return;
+    batch.set(nubeDbP.collection("raulito_club_clientes").doc(f), deseado[f]); nubeSyncP[f] = cn; nubeTotalesP[f] = deseado[f].visitasTotal || 0; cambios++;
   });
-  Object.keys(nubeSyncP).forEach(function(f){
-    if(!(f in deseado)){ batch.delete(nubeDbP.collection("raulito_club_clientes").doc(f)); delete nubeSyncP[f]; cambios++; }
-  });
+  // v26: esta subida ya NO borra documentos de la nube por ausencia
+  // local (esa rama podía hacer desaparecer clientes si la lista de
+  // un equipo divergía). El borrado definitivo y el cambio de
+  // teléfono borran su documento directamente, de forma explícita.
   var cfgCn = canonObj(st.cfg);
   if(nubeCfgJsonP !== "" && cfgCn !== nubeCfgJsonP){
     batch.set(nubeDbP.collection("raulito_club_config").doc("app"), JSON.parse(cfgCn));
@@ -1068,8 +1111,8 @@ function nubeInitP(){
         }
       }, function(err){ syncMalP((err && err.message) || "error al escuchar la configuración"); });
       nubeDbP.collection("raulito_club_clientes").onSnapshot(function(qs){
-        var lista = []; var sync = {};
-        qs.forEach(function(doc){ var c = clienteDeDoc(doc.id, doc.data()); lista.push(c); sync[doc.id] = canonObj(docDeCliente(c)); });
+        var lista = []; var sync = {}; var totales = {};
+        qs.forEach(function(doc){ var c = clienteDeDoc(doc.id, doc.data()); lista.push(c); sync[doc.id] = canonObj(docDeCliente(c)); totales[doc.id] = c.visitasTotal || 0; });
         if(!nubeMigracionHecha && lista.length === 0 && nubeLocalesPrevios && nubeLocalesPrevios.length){
           // Primera vez: la nube está vacía y este equipo ya tenía clientes reales -> se suben, sin perderlos de vista
           nubeMigracionHecha = true;
@@ -1080,7 +1123,7 @@ function nubeInitP(){
         }
         nubeMigracionHecha = true;
         doblarPremiosPendientes(lista);
-        nubeSyncP = sync;
+        nubeSyncP = sync; nubeTotalesP = totales;
         var demos = st.clientes.filter(function(c){ return esDemoC(c); });
         nubeAplicandoP = true;
         st.clientes = lista.concat(demos);
