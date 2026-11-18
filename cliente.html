@@ -138,7 +138,7 @@ function registrarErrorC(donde, detalle){
     var txt = String(detalle == null ? "" : detalle).slice(0, 300);
     var ultimo = lista[lista.length - 1];
     if(ultimo && ultimo.donde === donde && ultimo.detalle === txt && (Date.now() - (ultimo.ts || 0)) < 60000) return;
-    lista.push({donde:String(donde || "tarjeta"), detalle:txt, ts:Date.now(), app:"tarjeta-v22"});
+    lista.push({donde:String(donde || "tarjeta"), detalle:txt, ts:Date.now(), app:"tarjeta-v26"});
     localStorage.setItem(ERRORES_CLAVE_C, JSON.stringify(lista.slice(-30)));
     if(typeof subirErroresC === "function") subirErroresC();
   }catch(e){}
@@ -470,9 +470,24 @@ function nubeSincronizarYo(){
   if(!nubeOnC || !nubeDbC || !yo || !yo.telefono || nubeAplicandoC) return;
   nubeSuscribirC(yo.telefono);
   var ref = nubeDbC.collection("raulito_club_clientes").doc(yo.telefono);
-  ref.get().then(function(snap){
-    var docD = snap.exists ? snap.data() : null;
+  // v26: la creación del registro exige confirmación del servidor.
+  // Una lectura desde la caché local sin conexión podía decir «no
+  // existe» de un registro que sí existe en la nube, y el set() lo
+  // pisaba con los datos frescos del teléfono (visitas en 1).
+  ref.get({source:"server"}).then(function(snap){
+    procesarSyncC(snap.exists ? snap.data() : null, true);
+  }).catch(function(){
+    ref.get().then(function(snap){
+      procesarSyncC(snap.exists ? snap.data() : null, false);
+    }).catch(function(err){ registrarErrorC("tarjeta: leer registro", (err && err.code) || (err && err.message) || "error al leer"); syncListo = true; quizasResolverTap(); });
+  });
+  function procesarSyncC(docD, confiable){
     var decision = decidirReconcilio(docD, yo, hoyStr());
+    if(decision === "crear" && !confiable){
+      registrarErrorC("tarjeta: crear diferido", "sin confirmación del servidor");
+      syncListo = true; quizasResolverTap();
+      return;
+    }
     if(decision === "adoptar"){
       adoptarDocC(docD);
     } else if(decision === "crear"){
@@ -503,7 +518,7 @@ function nubeSincronizarYo(){
       if(escrituras.length) Promise.all(escrituras).catch(function(err){ registrarErrorC("tarjeta: empujar visitas", (err && err.code) || (err && err.message) || "error al empujar"); });
     }
     syncListo = true; quizasResolverTap();
-  }).catch(function(err){ registrarErrorC("tarjeta: leer registro", (err && err.code) || (err && err.message) || "error al leer"); syncListo = true; quizasResolverTap(); });
+  }
 }
 var _guardarC = guardar;
 guardar = function(){ _guardarC(); if(nubeTimerC) clearTimeout(nubeTimerC); nubeTimerC = setTimeout(nubeSincronizarYo, 900); };
