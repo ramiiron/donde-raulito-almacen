@@ -68,10 +68,10 @@
     <section id="v-inicio" class="vista activa">
       <div class="page-head"><h2>Panel general</h2><p>El pulso de tu club de clientes, de un vistazo.</p></div>
       <div class="kpis">
-        <div class="kpi"><span class="lb"><svg class="ic" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Clientes</span><b id="s-clientes">0</b><span>registrados en el club</span></div>
-        <div class="kpi"><span class="lb"><svg class="ic" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Visitas hoy</span><b id="s-visitas-hoy">0</b><span>clientes que vinieron hoy</span></div>
-        <div class="kpi"><span class="lb"><svg class="ic" viewBox="0 0 24 24"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>Recompensas</span><b id="s-listas">0</b><span>listas para canjear</span></div>
-        <div class="kpi"><span class="lb"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Cumpleaños</span><b id="s-cumples">0</b><span>en los próximos 7 días</span></div>
+        <div class="kpi clic" onclick="irAKpi('todos')" title="Ver todos los clientes"><span class="lb"><svg class="ic" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Clientes</span><b id="s-clientes">0</b><span>registrados en el club</span></div>
+        <div class="kpi clic" onclick="irAKpi('hoy')" title="Ver los que visitaron hoy"><span class="lb"><svg class="ic" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Visitas hoy</span><b id="s-visitas-hoy">0</b><span>clientes que vinieron hoy</span></div>
+        <div class="kpi clic" onclick="irAKpi('lista')" title="Ver las recompensas listas"><span class="lb"><svg class="ic" viewBox="0 0 24 24"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>Recompensas</span><b id="s-listas">0</b><span>listas para canjear</span></div>
+        <div class="kpi clic" onclick="irAKpi('cumples')" title="Ver los cumpleaños próximos"><span class="lb"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Cumpleaños</span><b id="s-cumples">0</b><span>en los próximos 7 días</span></div>
       </div>
 
       <div class="cols2" style="margin-top:26px">
@@ -261,7 +261,7 @@
             <p class="ayuda">Esto es lo que ve el cliente al abrir su tarjeta: su avance y su recompensa. Ojo: el QR impreso y la placa solo abren la tarjeta; desde la v18 la visita se anota con el código vivo del «Modo caja» o a mano desde la ficha del cliente.</p>
             <a class="btn sec bloque" href="cliente.html" target="_blank" rel="noopener" style="text-decoration:none">Ver la vista del cliente</a>
           </div>
-          <div class="card"><p class="ayuda"><b>Club en la nube (v27).</b> Los datos viven en la base propia del almacén y se comparten entre este panel y las tarjetas de los clientes. El panel pide ingreso con correo y contraseña, y las visitas de los clientes se anotan con el código rotativo del Modo caja. Los premios que un cliente gana en su tarjeta quedan «pendientes» y este panel los confirma solo al abrirse: un premio canjeado nunca se duplica. La compra mínima por visita se informa en la bienvenida y en la tarjeta del cliente. Al registrar a un cliente a mano, su primera visita queda anotada al tiro. Desde la v22, si algo falla la app muestra un aviso con botón para recargar en vez de quedar en blanco, una barra arriba avisa mientras el panel sincroniza con la nube, y los errores quedan registrados en Ajustes, sección «Errores de la app». Desde la v23, borrar una ficha la mueve a la <b>papelera</b> (al final de «Clientes»): sale del panel y de los avisos, pero se puede recuperar; el borrado definitivo se hace desde la misma papelera. Y en «Respaldo y datos» la app anota la fecha del último respaldo exportado y recuerda aquí cuando pasan 14 días sin exportar uno nuevo. Desde la v24, la vista «Clientes» se puede filtrar por tema (recompensa lista, cumpleaños en 30 días, inactivos, sin visitas) y ordenar por visitas, progreso, visita reciente o cumpleaños más cercano, además de buscar por nombre o teléfono. Y desde la v25, el filtro de visitas es a elección: eliges el número exacto de visitas del progreso y la lista muestra solo a los clientes que van en ese número. La v26 protege los datos: el panel nunca sube cambios antes de recibir la lista de la nube, un conteo de visitas jamás retrocede desde una copia local, la sincronización ya no borra clientes de la nube, y registrar un teléfono que ya existe no crea un duplicado (si estaba en la papelera, vuelve a la lista con sus visitas). En la v27, todos los filtros de «Clientes» son botones en la misma barra, sin menús desplegables: temas en la primera fila, el número de visitas en la segunda y el orden en la tercera, y se sumó el filtro «Visitaron hoy».</p></div>
+          <div class="card"><p class="ayuda"><b>Club en la nube (v28).</b> Los datos viven en la base propia del almacén y se comparten entre este panel y las tarjetas de los clientes. El panel pide ingreso con correo y contraseña, y las visitas de los clientes se anotan con el código rotativo del Modo caja. Los premios que un cliente gana en su tarjeta quedan «pendientes» y este panel los confirma solo al abrirse: un premio canjeado nunca se duplica. La compra mínima por visita se informa en la bienvenida y en la tarjeta del cliente. Al registrar a un cliente a mano, su primera visita queda anotada al tiro. Desde la v22, si algo falla la app muestra un aviso con botón para recargar en vez de quedar en blanco, una barra arriba avisa mientras el panel sincroniza con la nube, y los errores quedan registrados en Ajustes, sección «Errores de la app». Desde la v23, borrar una ficha la mueve a la <b>papelera</b> (al final de «Clientes»): sale del panel y de los avisos, pero se puede recuperar; el borrado definitivo se hace desde la misma papelera. Y en «Respaldo y datos» la app anota la fecha del último respaldo exportado y recuerda aquí cuando pasan 14 días sin exportar uno nuevo. Desde la v24, la vista «Clientes» se puede filtrar por tema (recompensa lista, cumpleaños en 30 días, inactivos, sin visitas) y ordenar por visitas, progreso, visita reciente o cumpleaños más cercano, además de buscar por nombre o teléfono. Y desde la v25, el filtro de visitas es a elección: eliges el número exacto de visitas del progreso y la lista muestra solo a los clientes que van en ese número. La v26 protege los datos: el panel nunca sube cambios antes de recibir la lista de la nube, un conteo de visitas jamás retrocede desde una copia local, la sincronización ya no borra clientes de la nube, y registrar un teléfono que ya existe no crea un duplicado (si estaba en la papelera, vuelve a la lista con sus visitas). En la v27, todos los filtros de «Clientes» son botones en la misma barra, sin menús desplegables: temas en la primera fila, el número de visitas en la segunda y el orden en la tercera, y se sumó el filtro «Visitaron hoy». En la v28, los cuatro recuadros de Inicio (Clientes, Visitas hoy, Recompensas y Cumpleaños) se pueden tocar y llevan directo a su lista ya filtrada o a la vista de cumpleaños.</p></div>
         </div>
       </div>
     </section>
@@ -758,6 +758,19 @@ function pintarTodoSeguro(){
   pintarPapelera();
   pintarAvisoRespaldo();
 }
+function marcarFiltroTema(){
+  document.querySelectorAll("#filtros-clientes .chipbtn").forEach(function(x){ x.classList.toggle("on", x.dataset.f === filtroCli); });
+}
+/* Recuadros de Inicio clicables (v28): cada número lleva a su
+   lista ya filtrada, no son adorno. «Cumpleaños» va a su vista,
+   que es donde están los botones de felicitar. */
+function irAKpi(destino){
+  if(destino === "cumples"){ irA("cumples"); return; }
+  filtroCli = destino; filtroVisitas = "";
+  var b = document.getElementById("buscar"); if(b) b.value = "";
+  marcarFiltroTema();
+  irA("clientes"); pintarTodo();
+}
 function irA(v){
   document.querySelectorAll(".vista").forEach(function(s){ s.classList.toggle("activa", s.id==="v-"+v); });
   document.querySelectorAll("nav button").forEach(function(b){ b.classList.toggle("on", b.dataset.v===v); });
@@ -770,7 +783,7 @@ document.getElementById("buscar").addEventListener("input", pintarTodo);
 document.querySelectorAll("#filtros-clientes .chipbtn").forEach(function(b){
   b.addEventListener("click", function(){
     filtroCli = b.dataset.f;
-    document.querySelectorAll("#filtros-clientes .chipbtn").forEach(function(x){ x.classList.toggle("on", x===b); });
+    marcarFiltroTema();
     pintarTodo();
   });
 });
@@ -800,6 +813,7 @@ document.getElementById("btn-nuevo").addEventListener("click", function(){
   // 1 visita (pasó con clientes que «desaparecían» de la lista).
   var existente = st.clientes.find(function(x){ return x.telefono === fonoOk; });
   if(existente){
+    filtroCli = "todos"; filtroVisitas = ""; marcarFiltroTema();
     document.getElementById("buscar").value = existente.nombre;
     if(existente.papelera){
       existente.papelera = false; existente.borradoEn = "";
